@@ -1,0 +1,14 @@
+# Apply LFB specific configurations for BBB
+- set_fact: hostname="{{ ansible_nodename }}"
+- set_fact: domainname="{{ ansible_domain }}"
+- set_fact: bbbfqdn="{{ ansible_fqdn }}"
+
+- name: Copy apply-config.sh to /etc/bigbluebutton/bbb-conf/apply-config.sh on target
+  copy:
+    src: files/apply-config.sh
+    dest: /etc/bigbluebutton/bbb-conf/apply-config.sh
+    owner: root
+    group: root
+    mode: 0755
+  notify: Restart BBB
+

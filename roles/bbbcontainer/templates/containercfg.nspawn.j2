@@ -1,0 +1,11 @@
+[Exec]
+Hostname={{ item }}
+
+[Network]
+Bridge=virbr0
+
+[Files]
+BindReadOnly=/var/lib/machines/config/{{ item }}_interfaces:/etc/network/interfaces
+BindReadOnly=/var/lib/machines/config/{{ item }}_hostname:/etc/hostname
+BindReadOnly=/var/lib/machines/config/{{ item }}_hosts:/etc/hosts
+BindReadOnly=/etc/resolv.conf

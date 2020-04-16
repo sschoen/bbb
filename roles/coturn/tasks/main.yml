@@ -1,0 +1,86 @@
+- name: install packages
+  apt:
+    name:
+      - ufw
+      - certbot
+      - coturn
+      - acl
+    state: latest
+
+- name: Debug FQDN
+  debug: 
+    var: inventory_hostname
+
+- name: fetch LE certificate
+  command:
+    cmd: >
+      certbot certonly --standalone --noninteractive --agree-tos
+      --preferred-challenges http
+      --email {{ letsencryptemail }}
+      --deploy-hook 'systemctl restart coturn'
+      -d {{ inventory_hostname }}
+    creates: /etc/letsencrypt/live
+  when: letsencryptemail is defined and letsencryptemail | length > 0
+
+- name: allow turnserver access to LE directories
+  acl:
+    path: "{{ item }}"
+    entity: turnserver
+    etype: user
+    permissions: x
+    state: present
+  with_items:
+    - /etc/letsencrypt/live/
+    - /etc/letsencrypt/archive/
+
+- name: allow turnserver access to LE privat key
+  acl:
+    path: /etc/letsencrypt/archive/{{ inventory_hostname }}/privkey1.pem
+    entity: turnserver
+    etype: user
+    permissions: r
+    state: present
+
+
+- name: adapt coturn ports in ufw
+  replace:
+    path: /etc/ufw/applications.d/turnserver
+    regexp: '^ports=.*$'
+    replace: 'ports=443,444,3478,3479,5349,5350,49152:65535/tcp|443,444,3478,3479,5349,5350,49152:65535/udp'
+
+- name: allow ssh in ufw
+  ufw:
+    rule: limit
+    name: OpenSSH
+    state: enabled
+
+- name: allow turnserver in ufw
+  ufw:
+    rule: allow
+    name: turnserver
+    state: enabled
+
+
+- name: allow coturn to open lower ports
+  capabilities:
+    path: /usr/bin/turnserver
+    capability: cap_net_bind_service+eip
+    state: present
+
+
+- name: adapt turnserver.conf
+  blockinfile:
+    path: /etc/turnserver.conf
+    block: |
+      listening-port=3478
+      tls-listening-port=443
+      fingerprint
+      lt-cred-mech
+      static-auth-secret={{ static_auth_secret }}
+      realm={{ ansible_domain }}
+      cert=/etc/letsencrypt/live/{{ inventory_hostname }}/fullchain.pem
+      pkey=/etc/letsencrypt/live/{{ inventory_hostname }}/privkey.pem
+      dh2066
+      no-tlsv1
+      no-tlsv1_1
+  notify: "restart coturn"

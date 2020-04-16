@@ -1,0 +1,15 @@
+- name: Check BBBs
+  hosts: bigbluebutton
+  remote_user: root
+  become: no
+  tasks:
+    - name: Run BBB status check
+      command: /usr/bin/bbb-conf --status
+      register: status
+      changed_when: status.stdout_lines | length != 13 or status.stdout is search('inactive') or status.stdout is search('failed')
+
+    - name: show output
+      debug:
+        msg: "{{ status.stdout_lines }}"
+      when: status.stdout_lines | length != 13 or status.stdout is search('inactive') or status.stdout is search('failed')
+      failed_when: status.stdout_lines | length != 13 or status.stdout is search('inactive') or status.stdout is search('failed')

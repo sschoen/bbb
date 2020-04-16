@@ -1,0 +1,7 @@
+- name: Restart ufw
+  systemd: name=ufw state=restarted enabled=yes
+  listen: "Restart ufw"
+
+- name: Restart networking
+  systemd: name=networking state=restarted enabled=yes
+  listen: "Restart networking"

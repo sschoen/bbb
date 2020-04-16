@@ -1,0 +1,60 @@
+- name: Add bridge configuration
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto virbr0
+      iface virbr0 inet static
+         address {{ guest_network | ipaddr('next_usable') }}
+         netmask {{ guest_network | ipaddr('netmask') }}
+         bridge_ports none
+         bridge_stp off
+         bridge_fd 0
+         pre-up brctl addbr virbr0
+  notify: Restart networking
+
+- name: Enable IPv4 forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: yes
+    state: present
+    reload: yes
+    
+- name: Configure forwarding in ufw
+  lineinfile:
+    path: /etc/default/ufw
+    regexp: "^DEFAULT_FORWARD_POLICY="  
+    line: DEFAULT_FORWARD_POLICY="ACCEPT"
+  notify: Restart ufw
+
+- name: Configure ufw rules
+  ufw:
+    rule: allow
+    interface: "{{ ansible_default_ipv4.interface }}"
+    direction: in
+    src: any
+    dest: "{{ guest_network }}"
+  notify: Restart ufw
+
+- name: Set fs.inotify.max_user_instances to 512
+  sysctl:
+    name: fs.inotify.max_user_instances
+    value: '512'
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+# directories
+- name: Make sure config dir exists
+  file:
+    path: /etc/systemd/nspawn
+    state: directory
+
+- name: Make sure machine config dir exists
+  file:
+    path: /var/lib/machines/config/
+    state: directory
+  
+#    allow from virbr0 to any ??
+
+- meta: flush_handlers

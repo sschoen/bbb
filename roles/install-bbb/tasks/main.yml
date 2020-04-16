@@ -1,0 +1,10 @@
+# Do the BBB installation 
+- set_fact: hostname="{{ ansible_nodename }}"
+- set_fact: domainname="{{ ansible_domain }}"
+- set_fact: bbbfqdn="{{ ansible_fqdn }}"
+
+- name: Make sure the apt cache is updated before running the bbb-install script
+  apt: update_cache=yes
+
+- name: "Run /root/bbb-install.sh -v {{ scriptoptversion }} -s {{ bbbfqdn }} -e {{ scriptoptlemail }} -g -c {{ scriptoptsturnsrv }}:{{ scriptoptsturnpw }}"
+  script: "files/bbb-install.sh -v {{ scriptoptversion }} -s {{ bbbfqdn }} -e {{ scriptoptlemail }} -g -c {{ scriptoptsturnsrv }}:{{ scriptoptsturnpw }} > bbb-install.log"

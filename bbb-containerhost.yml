@@ -1,0 +1,30 @@
+
+- name: Install containerhost for LFB BBB
+  hosts: containerhost
+  remote_user: root
+  become: no
+  vars_files: vault
+  vars:
+    extra_pkgs:
+      - ufw
+      - systemd-container
+      - debootstrap
+      - bridge-utils
+
+    guest_network: "{{ vault_guest_network }}"
+    static_auth_secret: "{{ vault_static_auth_secret }}"
+    container_image: "{{ vault_container_image }}"
+    monhost_ip: "{{ vault_monhost_ip }}"
+
+    ## list of debian containers to set up:
+    turnserver: "turn{{ inventory_hostname_short | replace('b3srv', '')}}"
+    debcontainer:
+      - "{{ turnserver }}"
+
+  roles:
+    - up2date-debian
+    - security
+    - prepare-containerhost
+    - debcontainer
+    - bbbcontainer
+    - monitoring

@@ -1,0 +1,21 @@
+- name: Install coturn for LFB BBB
+  hosts: turnserver
+  remote_user: root
+  become: no
+  vars_files: vault
+  vars:
+    static_auth_secret: "{{ vault_static_auth_secret }}"
+    monhost_ip: "{{ vault_monhost_ip }}"
+
+  vars_prompt:
+    - name: "letsencryptemail"
+      prompt:
+        In case you would like to fetch a LetsEncrypt certificate and have
+        not done so yet, provide your eMail address here.  Leave empty to
+        just continue
+      private: no
+
+  roles:
+    - up2date-debian
+    - coturn
+    - monitoring

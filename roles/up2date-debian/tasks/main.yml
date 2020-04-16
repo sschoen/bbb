@@ -1,0 +1,37 @@
+# Update lists and upgrade packages.
+
+- name: update apt package lists
+  apt:
+    update_cache: yes
+    cache_valid_time: 86400
+
+- name: upgrade packages
+  apt:
+    upgrade: dist
+    autoremove: yes
+    autoclean: yes
+
+- name: install etckeeper
+  apt:
+    name: etckeeper
+    state: latest
+
+- name: install extra packages from stable
+  apt:
+    name: "{{ extra_pkgs }}"
+    state: latest
+  when: extra_pkgs|length
+
+- name: add {{ ansible_distribution_release }}-backports
+  apt_repository:
+    repo: deb http://deb.debian.org/debian/ {{ ansible_distribution_release }}-backports main
+    state: present
+    update_cache: yes
+  when: extra_pkgs_bpo|length
+
+- name: install extra packages from backports
+  apt:
+    name: "{{ extra_pkgs_bpo }}"
+    state: latest
+    default_release: "{{ ansible_distribution_release }}-backports"
+  when: extra_pkgs_bpo|length

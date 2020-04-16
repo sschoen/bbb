@@ -1,0 +1,110 @@
+
+## usually done by bbb if not run in container:
+- name: Switch off hugepages
+  copy:
+    src: transparent_hugepage.conf
+    dest: /etc/tmpfiles.d/transparent_hugepage.conf
+
+- name: generate list of available bbbs
+  set_fact:
+    bbbcontainer: "{{ bbbcontainer }} + [ '{{ item }}' ]"
+  when: lookup('dig', item ~ '.' ~ ansible_domain) | ipaddr(guest_network)
+  with_sequence: >
+    start=1
+    end={{ guest_network | ipaddr('size') | int - 2 - debcontainer | length }}
+    format=bbb{{ ansible_hostname | replace('b3srv', '')}}-%03d
+
+- name: Fetch and/or clone container image
+  script: mkbbbcont {{ container_image }} {{ item }} {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
+  args:
+    creates: "/var/lib/machines/{{ item }}"
+  loop: "{{ bbbcontainer }}"
+
+
+## Provide all other configuration here:
+- name: Provide container configuration
+  template:
+    src: containercfg.nspawn.j2
+    dest: "/etc/systemd/nspawn/{{ item }}.nspawn"
+  loop: "{{ bbbcontainer }}"
+
+- name: Provide individual container nic config
+  template:
+    src: interfaces.j2
+    dest: "/var/lib/machines/config/{{ item }}_interfaces"
+  loop: "{{ bbbcontainer }}"
+
+- name: Provide individual hosts file
+  template:
+    src: hosts.j2
+    dest: "/var/lib/machines/config/{{ item }}_hosts"
+  loop: "{{ bbbcontainer }}"
+
+- name: Provide hostname
+  lineinfile:
+    path: "/var/lib/machines/config/{{ item }}_hostname"
+    line: "{{ item }}"
+    create: yes
+  loop: "{{ bbbcontainer }}"
+
+
+
+- name: Set container property MemoryMax
+  command:
+    cmd: systemctl set-property systemd-nspawn@{{ item }} MemoryMax={{ MemoryMax }}
+    creates: /etc/systemd/system.control/systemd-nspawn@{{ item }}.service.d/50-MemoryMax.conf
+  loop: "{{ bbbcontainer }}"
+
+- name: Set container property CPUQuota
+  command:
+    cmd: systemctl set-property systemd-nspawn@{{ item }} CPUQuota={{ CPUQuota }}
+    creates: /etc/systemd/system.control/systemd-nspawn@{{ item }}.service.d/50-CPUQuota.conf
+  loop: "{{ bbbcontainer }}"
+
+
+- name: Set stun and turn servers
+  template:
+    src: turn-stun-servers.xml.j2
+    dest: "/var/lib/machines/{{ item }}/usr/share/bbb-web/WEB-INF/classes/spring/turn-stun-servers.xml"
+  loop: "{{ bbbcontainer }}"
+
+- name: Disable the disable-transparent-huge-pages.service
+  file:
+    path: "/var/lib/machines/{{ item }}/etc/systemd/system/multi-user.target.wants/disable-transparent-huge-pages.service"
+    state: absent
+  loop: "{{ bbbcontainer }}"
+
+- name: Start containers
+  systemd:
+    name: systemd-nspawn@{{ item }}.service
+    state: started
+  loop: "{{ bbbcontainer }}"
+
+- name: Wait a minute for containers to settle
+  pause:
+    minutes: 1
+
+## Use the ssh host keys here as a marker for resetting/cleaning BBB
+- name: Reset BBB
+  command:
+    cmd: systemd-run -M {{ item }} -- /usr/bin/bbb-conf --clean
+    creates: "/var/lib/machines/{{ item }}/etc/ssh/ssh_host_*"
+  loop: "{{ bbbcontainer }}"
+
+- name: Provide ssh-hostkey
+  command:
+    cmd: systemd-run -M {{ item }} /usr/sbin/dpkg-reconfigure openssh-server
+    creates: "/var/lib/machines/{{ item }}/etc/ssh/ssh_host_*"
+  loop: "{{ bbbcontainer }}"
+
+
+- name: Container status check
+  command: systemctl list-machines
+  register: status
+  changed_when: status.stdout is search("degraded")
+
+- name: Show output
+  debug:
+    msg: "{{ status.stdout_lines }}"
+  changed_when: status.stdout is search("degraded")
+  when: status.stdout_lines is defined

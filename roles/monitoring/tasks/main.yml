@@ -1,0 +1,57 @@
+# Enable monitoring
+- name: install packages for monitoring
+  apt:
+    name:
+      - xinetd
+    state: latest
+
+- name: Copy check_mk agent to target
+  copy:
+    src: check-mk-agent_1.6.0p11-1_all.deb
+    dest: /tmp/check-mk-agent_1.6.0p11-1_all.deb
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install check-mk-agent
+  apt: deb="/tmp/check-mk-agent_1.6.0p11-1_all.deb"
+
+- name: check if ufw rules dir exists
+  stat:
+    path: /etc/ufw/applications.d
+  register: ufw_dir
+
+- name: Copy ufw rules to target
+  copy:
+    src: files/check_mk.ufw
+    dest: /etc/ufw/applications.d/checkmk
+    owner: root
+    group: root
+    mode: 0644
+  when: ufw_dir.stat.exists == true
+
+- name: allow check_mk in ufw
+  ufw:
+    rule: allow
+    name: checkmk
+    state: enabled
+  when: ufw_dir.stat.exists == true
+
+- name: Copy checkbbb.py to /usr/lib/check_mk_agent/local on target
+  copy:
+    src: checkbbb.py
+    dest: /usr/lib/check_mk_agent/local/checkbbb.py
+    owner: root
+    group: root
+    mode: 0700
+  when: "'bbb' in inventory_hostname"
+
+- name: Copy template to xinetd check_mk config
+  template:
+    src: xinetd_check_mk.j2
+    dest: /etc/xinetd.d/check_mk
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart xinetd
+

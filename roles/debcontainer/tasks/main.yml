@@ -1,0 +1,62 @@
+
+- name: add available hosts to container list
+  set_fact:
+    container: "{{ container }} + [ '{{ item }}' ]"
+  when: lookup('dig', item ~ '.' ~ ansible_domain) | ipaddr(guest_network)
+  loop: "{{ debcontainer }}"
+
+- name: debootstrap minimal system
+  command:
+    cmd: >
+      debootstrap --include=systemd-container,openssh-server,python
+      --components=main,contrib,non-free stable
+      {{ item }} http://deb.debian.org/debian
+  args:
+    chdir: /var/lib/machines/
+    creates: "/var/lib/machines/{{ item }}"
+  loop: "{{ container }}"
+
+- name: Provide authorized_keys
+  copy:
+    src: /root/.ssh
+    dest: "/var/lib/machines/{{ item }}/root/"
+    remote_src: yes
+  loop: "{{ container }}"
+
+## there is no root password, so no need to disable ssh password authentication
+#  lineinfile:
+#    dest: "/var/lib/machines/{{ item }}/etc/ssh/sshd_config"
+#    regexp: "^#?PasswordAuthentication"
+#    line: "PasswordAuthentication no"
+#  loop: "{{ container }}"
+
+- name: Provide container configuration
+  template:
+    src: containercfg.nspawn.j2
+    dest: "/etc/systemd/nspawn/{{ item }}.nspawn"
+  loop: "{{ container }}"
+
+- name: Provide individual container nic config
+  template:
+    src: interfaces.j2
+    dest: "/var/lib/machines/config/{{ item }}_interfaces"
+  loop: "{{ container }}"
+
+- name: Provide individual hosts file
+  template:
+    src: hosts.j2
+    dest: "/var/lib/machines/config/{{ item }}_hosts"
+  loop: "{{ container }}"
+
+- name: Provide hostname
+  lineinfile:
+    path: "/var/lib/machines/config/{{ item }}_hostname"
+    line: "{{ item }}"
+    create: yes
+  loop: "{{ container }}"
+
+- name: Start containers
+  systemd:
+    name: systemd-nspawn@{{ item }}.service
+    state: started
+  loop: "{{ container }}"

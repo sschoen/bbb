@@ -1,0 +1,31 @@
+# Prepare BBB installation 
+- set_fact: bbbfqdn="{{ inventory_hostname }}"
+- set_fact: domainname="{{ inventory_hostname.split('.')[1:] | join('.') }}"
+- set_fact: hostname="{{ inventory_hostname.split('.')[0] }}"
+
+- name: Using hostname determined from inventory
+  debug: var=hostname
+
+- name: Using domainname determined from inventory
+  debug: var=domainname
+
+- name: Using fqdn determined from inventory
+  debug: var=bbbfqdn
+
+- name: Fix hosts file for FQDN
+  lineinfile:  
+    state=present
+    dest=/etc/hosts
+    line="{{ ansible_default_ipv4.address }} {{ bbbfqdn }} {{ hostname }}"
+    regexp="^{{ ansible_default_ipv4.address }}"
+
+- name: Remove entry for 127.0.1.1 in /etc/hosts
+  lineinfile:  
+    state=absent
+    dest=/etc/hosts
+    regexp='^127\.0\.1\.1'
+
+
+- name: Change the hostname
+  hostname:
+    name="{{ hostname }}"

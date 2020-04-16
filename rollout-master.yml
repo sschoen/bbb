@@ -1,0 +1,15 @@
+#
+# This playbook runs the rollout.
+#
+# First, prepare the hw-servers and install/clone the containers,
+# then configure the turn servers.
+
+---
+
+#- checks? collect info?
+
+- import_playbook: bbb-containerhost.yml
+- import_playbook: bbb-coturn.yml
+- import_playbook: bbb-check.yml
+  
+#- final tests?  scalelite stuff?

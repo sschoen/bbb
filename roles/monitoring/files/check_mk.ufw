@@ -1,0 +1,4 @@
+[checkmk]
+title=Check MK Monitoring
+description=Check MK monitoring agent
+ports=6556
