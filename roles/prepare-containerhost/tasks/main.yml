@@ -39,7 +39,7 @@
 - name: Encrease fs.inotify.max_user_instances
   sysctl:
     name: fs.inotify.max_user_instances
-    value: '256'
+    value: '512'
     sysctl_set: yes
     state: present
     reload: yes

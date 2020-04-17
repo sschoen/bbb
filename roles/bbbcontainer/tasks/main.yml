@@ -97,6 +97,9 @@
     creates: "/var/lib/machines/{{ item }}/etc/ssh/ssh_host_*"
   loop: "{{ bbbcontainer }}"
 
+- name: Wait a minute for containers to settle
+  pause:
+    minutes: 1
 
 - name: Container status check
   command: systemctl list-machines
