@@ -2,5 +2,4 @@ auto host0
 iface host0 inet static
   address {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
   netmask {{ guest_network | ipaddr('netmask') }}
-  pointopoint {{ ansible_default_ipv4['address'] }}
-  gateway {{ ansible_virbr0['ipv4']['address'] }}
+  gateway {{ guest_network | ipaddr('next_usable') }}
