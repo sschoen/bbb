@@ -3,15 +3,16 @@
   hosts: all
   remote_user: root
   become: no
+  vars_files: vault
   vars:
     debian_flavor: ubuntu
     iconfig_system_locale: 'en_US.UTF-8'
     config_system_language: 'en_US.UTF-8'
 
     scriptoptversion: xenial-220  
-    scriptoptlemail: {{ vault_scriptoptlemail }}
-    scriptoptsturnsrv: {{ vault_scriptoptsturnsrv }}
-    scriptoptsturnpw: {{ vault_scriptoptsturnpw }}
+    scriptoptlemail: "{{ vault_scriptoptlemail }}"
+    scriptoptsturnsrv: "{{ vault_scriptoptsturnsrv }}"
+    scriptoptsturnpw: "{{ vault_scriptoptsturnpw }}"
     
     required_packages:
       - fail2ban
