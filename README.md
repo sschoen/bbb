@@ -39,7 +39,7 @@ Sollte also automagisch für den Host bbb.q-gym.de alles richtig machen.
 
 ## Installation Turnserver
 
-Sollte auf Debian Derivaten laufen (gestetet debian buster). Voraussetzung: Fsch installiertes Debian/Ubuntu mit DNS Eintrag.
+Sollte auf Debian Derivaten laufen (gestetet debian buster). Voraussetzung: Frisch installiertes Debian/Ubuntu mit DNS Eintrag.
 
 Anzupassen ist das Secret im Playbook, das kann erzeugt werden mit ``openssl rand -hex 16``
 
