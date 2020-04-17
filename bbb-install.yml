@@ -27,10 +27,10 @@
       - xinetd
   
   roles:
-    #- up2date-ubuntu
-    #- prepare-bbb
+    - up2date-ubuntu
+    - prepare-bbb
     - install-bbb
     - configure-bbb
-    #- security
+    - security
     #- monitoring
-    #- reboot
+    - reboot
