@@ -9,11 +9,24 @@ Ansible playbook zur Installation von BBB auf den LFB Maschinen.
 * DNS Einträge für alle Server müssen angelegt sein (BSP bbb01.q-gym.de, bbb02.q-gym.de)
 * Sicherstellen, dass man sich als root mit SSH-Key auf den Server verbinden kann
 * Anpassen der Einstellungen für die BBB Version und den Turn-Server im Playbook wenn nötig.
-* Wenn man mehrerer Maschinen ausrollen möchte, kann man ein Inventory File anlegen und mit ``ansible-playbook -i hosts bbb-install.yml`` alle Maschinen auf einmal installieren.
-* Wennb man nur eine Maschine installieren möchte kann man das ohne Inventory tun: ``ansible-playbook -i "bbb.q-gym.de," bbb-install.yml``
+* Wenn man mehrere Maschinen ausrollen möchte, kann man ein Inventory File anlegen und mit ``ansible-playbook -i hosts bbb-install.yml --ask-vault-pass`` alle Maschinen auf einmal installieren.
+* Wennb man nur eine Maschine installieren möchte kann man das ohne Inventory tun: ``ansible-playbook -i "bbb.q-gym.de," bbb-install.yml --ask-vault-pass``
 * Wenn man direkten Zugriff auf Greenlight haben möchte, muss man dort Accounts anlegen, zumindest einen admin-Account. Dazu als root auf dem Server anmelden, ``cd greenlight``, dort ``docker exec greenlight-v2 bundle exec rake user:create["Lokaler Admin","admin@bbb.local","SUPERGEHEIMESPASSWORT","admin"]``
 
 Das Playbook ``bbb-without-install-script.yml`` arbeitet alle Roles ab, bis auf das eigentliche bbb-Installationssskript. Das kann verwendet werden, um die Umgebung um ein installiertes BBB anzupassen, z.B. wenn man ``apply-config.sh`` verändert.
+
+Wenn man das Passwort für den ansible-Vault nicht kennt, muss man im Variablen-Block der Playbooks seine eigenen Werte direkt eintragen:
+
+    scriptoptlemail: "{{ vault_scriptoptlemail }}"
+    scriptoptsturnsrv: "{{ vault_scriptoptsturnsrv }}"
+    scriptoptsturnpw: "{{ vault_scriptoptsturnpw }}"
+
+wir dann z.B. zu:
+
+    scriptoptlemail: "webmaster.meinedomain.dom"
+    scriptoptsturnsrv: "turn.meinedomain.dom"
+    scriptoptsturnpw: "xxggrree55"
+
 
 ## Konfigurationsvariablen
 
@@ -23,7 +36,6 @@ Der Host- und Domainname muss nicht mehr als Variable gesetzt werden, sondern wi
 
 Sollte also automagisch für den Host bbb.q-gym.de alles richtig machen.
 
-Solange man den Turn Server nicht ändern möchte, kann man das Playbook unangetastet lassen. Später kann der Turn als inventory Variable ins Inventory-File.
 
 ## Installation Turnserver
 
