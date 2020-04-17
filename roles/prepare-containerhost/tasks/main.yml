@@ -36,10 +36,10 @@
     dest: "{{ guest_network }}"
   notify: Restart ufw
 
-- name: Set fs.inotify.max_user_instances to 512
+- name: Encrease fs.inotify.max_user_instances
   sysctl:
     name: fs.inotify.max_user_instances
-    value: '512'
+    value: '256'
     sysctl_set: yes
     state: present
     reload: yes
