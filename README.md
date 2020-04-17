@@ -11,7 +11,7 @@ Ansible playbook zur Installation von BBB auf den LFB Maschinen.
 * Anpassen der Einstellungen für die BBB Version und den Turn-Server im Playbook wenn nötig.
 * Wenn man mehrere Maschinen ausrollen möchte, kann man ein Inventory File anlegen und mit ``ansible-playbook -i hosts bbb-install.yml --ask-vault-pass`` alle Maschinen auf einmal installieren.
 * Wennb man nur eine Maschine installieren möchte kann man das ohne Inventory tun: ``ansible-playbook -i "bbb.q-gym.de," bbb-install.yml --ask-vault-pass``
-* Wenn man direkten Zugriff auf Greenlight haben möchte, muss man dort Accounts anlegen, zumindest einen admin-Account. Dazu als root auf dem Server anmelden, ``cd greenlight``, dort ``docker exec greenlight-v2 bundle exec rake user:create["Lokaler Admin","admin@bbb.local","SUPERGEHEIMESPASSWORT","admin"]``
+
 
 Das Playbook ``bbb-without-install-script.yml`` arbeitet alle Roles ab, bis auf das eigentliche bbb-Installationssskript. Das kann verwendet werden, um die Umgebung um ein installiertes BBB anzupassen, z.B. wenn man ``apply-config.sh`` verändert.
 
@@ -27,6 +27,8 @@ wir dann z.B. zu:
     scriptoptsturnsrv: "turn.meinedomain.dom"
     scriptoptsturnpw: "xxggrree55"
 
+* Wenn man direkten Zugriff auf das BBB über Greenlight haben möchte, muss man dort Accounts noch anlegen, zumindest einen admin-Account. Dazu als root auf dem Server anmelden, ``cd greenlight``, dort ``docker exec greenlight-v2 bundle exec rake user:create["Lokaler Admin","admin@bbb.local","SUPERGEHEIMESPASSWORT","admin"]``
+* Um die Konfigurationsdaten für das Moodle-Plugin zu erhalten, führt man auf dem BBB-Server den Befehl ``bbb-conf --secret`` aus. Wenn man nur das Moodle-Plugin zum Zugriff auf das BBB nutzen will, benötit man keine Greenlight Benutzer.
 
 ## Konfigurationsvariablen
 
@@ -39,7 +41,7 @@ Sollte also automagisch für den Host bbb.q-gym.de alles richtig machen.
 
 ## Installation Turnserver
 
-Sollte auf Debian Derivaten laufen (gestetet debian buster). Voraussetzung: Fsch installiertes Debian/Ubuntu mit DNS Eintrag.
+Sollte auf Debian Derivaten laufen (gestetet debian buster). Voraussetzung: Frisch installiertes Debian/Ubuntu mit DNS Eintrag.
 
 Anzupassen ist das Secret im Playbook, das kann erzeugt werden mit ``openssl rand -hex 16``
 
