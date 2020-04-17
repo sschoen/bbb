@@ -27,7 +27,7 @@ wir dann z.B. zu:
     scriptoptsturnsrv: "turn.meinedomain.dom"
     scriptoptsturnpw: "xxggrree55"
 
-* Wenn man direkten Zugriff auf Greenlight haben möchte, muss man dort Accounts noch anlegen, zumindest einen admin-Account. Dazu als root auf dem Server anmelden, ``cd greenlight``, dort ``docker exec greenlight-v2 bundle exec rake user:create["Lokaler Admin","admin@bbb.local","SUPERGEHEIMESPASSWORT","admin"]``
+* Wenn man direkten Zugriff auf das BBB über Greenlight haben möchte, muss man dort Accounts noch anlegen, zumindest einen admin-Account. Dazu als root auf dem Server anmelden, ``cd greenlight``, dort ``docker exec greenlight-v2 bundle exec rake user:create["Lokaler Admin","admin@bbb.local","SUPERGEHEIMESPASSWORT","admin"]``
 * Um die Konfigurationsdaten für das Moodle-Plugin zu erhalten, führt man auf dem BBB-Server den Befehl ``bbb-conf --secret`` aus. Wenn man nur das Moodle-Plugin zum Zugriff auf das BBB nutzen will, benötit man keine Greenlight Benutzer.
 
 ## Konfigurationsvariablen
