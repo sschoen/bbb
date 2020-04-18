@@ -117,7 +117,7 @@
   debug:
     msg: "{{ status.stdout_lines }}"
   changed_when: status.stdout is search("degraded")
-  when: status.stdout_lines is defined
+  when: status.stdout_lines is defined and status.stdout is search("degraded")
   tags:
     - check
 
@@ -135,10 +135,21 @@
   tags:
     - check
 
-- name: BBB status check results
+- name: Check BBB status results
   command: journalctl --unit=bbb-conf --lines=14 --all -M {{ item }}
   register: bbb_status
   changed_when: bbb_status.stdout is search('inactive') or bbb_status.stdout is search('failed')
   loop: "{{ bbbcontainer }}"
+  tags:
+    - check
+
+- name: Show bad BBB status results
+  debug:
+    msg: "{{ item.stdout_lines }}"
+  when: item.stdout is search('inactive') or item.stdout is search('failed')
+  changed_when: item.stdout is search('inactive') or item.stdout is search('failed')
+  loop: "{{ bbb_status.results }}"
+  loop_control:
+    label: "{{ item.item }}"
   tags:
     - check
