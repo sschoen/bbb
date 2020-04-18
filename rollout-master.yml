@@ -10,6 +10,5 @@
 
 - import_playbook: bbb-containerhost.yml
 - import_playbook: bbb-coturn.yml
-- import_playbook: bbb-check.yml
   
 #- final tests?  scalelite stuff?

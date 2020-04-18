@@ -5,7 +5,7 @@
     src: transparent_hugepage.conf
     dest: /etc/tmpfiles.d/transparent_hugepage.conf
 
-- name: generate list of available bbbs
+- name: Generate list of available bbbs
   set_fact:
     bbbcontainer: "{{ bbbcontainer }} + [ '{{ item }}' ]"
   when: lookup('dig', item ~ '.' ~ ansible_domain) | ipaddr(guest_network)
@@ -13,6 +13,8 @@
     start=1
     end={{ guest_network | ipaddr('size') | int - 2 - debcontainer | length }}
     format=bbb{{ ansible_hostname | replace('b3srv', '')}}-%03d
+  tags:
+    - check
 
 - name: Fetch and/or clone container image
   script: mkbbbcont {{ container_image }} {{ item }} {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
@@ -87,13 +89,13 @@
 ## Use the ssh host keys here as a marker for resetting/cleaning BBB
 - name: Reset BBB
   command:
-    cmd: systemd-run -M {{ item }} -- /usr/bin/bbb-conf --clean
+    cmd: systemd-run --unit=bbb-conf -M {{ item }} -- /usr/bin/bbb-conf --clean
     creates: "/var/lib/machines/{{ item }}/etc/ssh/ssh_host_*"
   loop: "{{ bbbcontainer }}"
 
 - name: Provide ssh-hostkey
   command:
-    cmd: systemd-run -M {{ item }} /usr/sbin/dpkg-reconfigure openssh-server
+    cmd: systemd-run --unit=bbb-conf -M {{ item }} /usr/sbin/dpkg-reconfigure openssh-server
     creates: "/var/lib/machines/{{ item }}/etc/ssh/ssh_host_*"
   loop: "{{ bbbcontainer }}"
 
@@ -111,3 +113,25 @@
     msg: "{{ status.stdout_lines }}"
   changed_when: status.stdout is search("degraded")
   when: status.stdout_lines is defined
+
+- name: Run BBB status check on containers
+  command: systemd-run --unit=bbb-conf -M {{ item }} -- /usr/bin/bbb-conf --status
+  register: status
+  changed_when: "status.stderr is not search('Running as unit: bbb-conf.service')"
+  loop: "{{ bbbcontainer }}"
+  tags:
+    - check
+
+- name: Wait 5 seconds for status check results
+  pause:
+    seconds: 5
+  tags:
+    - check
+
+- name: BBB status check results
+  command: journalctl --unit=bbb-conf --lines=14 --all -M {{ item }}
+  register: bbb_status
+  changed_when: bbb_status.stdout is search('inactive') or bbb_status.stdout is search('failed')
+  loop: "{{ bbbcontainer }}"
+  tags:
+    - check
