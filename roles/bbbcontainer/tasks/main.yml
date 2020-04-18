@@ -5,7 +5,7 @@
     src: transparent_hugepage.conf
     dest: /etc/tmpfiles.d/transparent_hugepage.conf
 
-- name: Generate list of available bbbs
+- name: Generate list of available BBBs
   set_fact:
     bbbcontainer: "{{ bbbcontainer }} + [ '{{ item }}' ]"
   when: lookup('dig', item ~ '.' ~ ansible_domain) | ipaddr(guest_network)
@@ -99,6 +99,9 @@
     creates: "/var/lib/machines/{{ item }}/etc/ssh/ssh_host_*"
   loop: "{{ bbbcontainer }}"
 
+
+## Check container and BBB services
+
 - name: Wait a minute for containers to settle
   pause:
     minutes: 1
@@ -107,12 +110,16 @@
   command: systemctl list-machines
   register: status
   changed_when: status.stdout is search("degraded")
+  tags:
+    - check
 
 - name: Show output
   debug:
     msg: "{{ status.stdout_lines }}"
   changed_when: status.stdout is search("degraded")
   when: status.stdout_lines is defined
+  tags:
+    - check
 
 - name: Run BBB status check on containers
   command: systemd-run --unit=bbb-conf -M {{ item }} -- /usr/bin/bbb-conf --status
