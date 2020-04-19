@@ -1,0 +1,36 @@
+# Disable monitoring
+- name: deinstall packages for monitoring
+  apt:
+    name:
+      - check-mk-agent
+      - xinetd
+    state: absent
+
+- name: "Check if ufw is installed"
+  package_facts:
+    manager: "auto"
+
+- name: disable check_mk in ufw
+  ufw:
+    rule: allow
+    name: checkmk
+    state: disabled
+  when: "'ufw' in ansible_facts.packages"
+
+- name: Remove ufw rules on target
+  file:
+    path: /etc/ufw/applications.d/checkmk
+    state: absent
+
+- name: remove checkbbb.py on target
+  file:
+    path: /usr/lib/check_mk_agent/local/checkbbb.py
+    state: absent
+  when: "'bbb' in inventory_hostname"
+
+- name: remove xinetd check_mk config
+  file:
+    path: /etc/xinetd.d/check_mk
+    state: absent
+  notify: Restart xinetd
+

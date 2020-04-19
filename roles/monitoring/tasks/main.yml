@@ -46,6 +46,16 @@
     mode: 0700
   when: "'bbb' in inventory_hostname"
 
+- name: Copy checkbbb_from_chost.sh to /usr/lib/check_mk_agent/local on target
+  copy:
+    src: checkbbb_from_chost.sh
+    dest: /usr/lib/check_mk_agent/local/checkbbb_from_chost.sh
+    owner: root
+    group: root
+    mode: 0700
+  when: "'b3srv' in inventory_hostname"
+
+
 - name: Copy template to xinetd check_mk config
   template:
     src: xinetd_check_mk.j2

@@ -1,0 +1,16 @@
+- name: Copy check-script to container BBB
+  copy:
+    src: checkbbb_for_chost.py
+    dest: /usr/local/bin/checkbbb_for_chost.py
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Make sure output dir exists
+  file:
+    path: /var/cache/checkbbb
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
