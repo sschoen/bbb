@@ -43,9 +43,7 @@ for h in $BBBS; do
 		sumVoi=$((sumVoi + voice))
 		sumLis=$((sumLis + listeners))
 	fi
-	echo "0 bbb-containersum numMeetings=$sumM|numAttendees=$sumAtt|numWithVoice=$sumVoi|numWithVideo=$sumVid|numListeners=$sumLis [ContainerSum M:$sumM Att:$sumAtt Vid:$sumVid Voi:$sumVoi Lis:${sumLis}]"
-
-
 done
 
+echo "0 bbb-containersum numMeetings=$sumM|numAttendees=$sumAtt|numWithVoice=$sumVoi|numWithVideo=$sumVid|numListeners=$sumLis [ContainerSum M:$sumM Att:$sumAtt Vid:$sumVid Voi:$sumVoi Lis:${sumLis}]"
 
