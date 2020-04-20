@@ -26,12 +26,21 @@
     - bbb-numWithVideo
     - bbb-numWithVoice
   notify: Restart munin-node
-    
+
+- name: Remove some unnecessary plugins
+  command:
+    cmd: rm /etc/munin/plugins/if_err_vb* /etc/munin/plugins/irqstats
+    removes:
+      - /etc/munin/plugins/if_err_vb*
+      - /etc/munin/plugins/irqstats
+  notify: Restart munin-node
+
 - name: Allow access from monitoring host
   lineinfile:
     path: /etc/munin/munin-node.conf
     line: "allow ^{{ monhost_ip | replace('.','\\.') }}$"
     insertafter: "^allow ^::1$$"
+  notify: Restart munin-node
 
 - name: Open port in ufw
   ufw:
