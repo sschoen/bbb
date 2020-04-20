@@ -28,4 +28,4 @@
     - debcontainer
     - bbbcontainer
     - monitoring
-#    - munin-node
+    - munin-node

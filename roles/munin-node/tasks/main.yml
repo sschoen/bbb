@@ -27,12 +27,21 @@
     - bbb-numWithVoice
   notify: Restart munin-node
 
-- name: Remove some unnecessary plugins
-  command:
-    cmd: rm /etc/munin/plugins/if_err_vb* /etc/munin/plugins/irqstats
-    removes:
-      - /etc/munin/plugins/if_err_vb*
-      - /etc/munin/plugins/irqstats
+- name: Find unnecessary plugins
+  find:
+    paths: /etc/munin/plugins/
+    file_type: link
+    patterns:
+      - "if_err_vb*"
+      - "if_vb*"
+      - "irqstats"
+  register: result
+
+- name: Remove unnecessary plugins
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ result.files }}"
   notify: Restart munin-node
 
 - name: Allow access from monitoring host
