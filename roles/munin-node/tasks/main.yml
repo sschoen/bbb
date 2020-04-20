@@ -1,0 +1,40 @@
+- name: Install packages
+  apt:
+    name: munin-node
+    state: latest
+
+- name: Provide munin plugin script
+  copy:
+    src: munin-bbb
+    dest: /usr/local/bin/munin-bbb
+    mode: "0755"
+
+- name: Allow access to containers
+  file:
+    path: /var/lib/machines
+    mode: "0711"
+
+- name: Activate plugins
+  file:
+    src: /usr/local/bin/munin-bbb
+    dest: /etc/munin/plugins/{{ item }}
+    state: link
+  loop:
+    - bbb-numAttendees
+    - bbb-numListeners
+    - bbb-numMeetings
+    - bbb-numWithVideo
+    - bbb-numWithVoice
+  notify: Restart munin-node
+    
+- name: Allow access from monitoring host
+  lineinfile:
+    path: /etc/munin/munin-node.conf
+    line: "allow ^{{ monhost_ip | replace('.','\\.') }}$"
+    insertafter: "^allow ^::1$$"
+
+- name: Open port in ufw
+  ufw:
+    rule: allow
+    port: '4949'
+    proto: tcp

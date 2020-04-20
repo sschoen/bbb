@@ -1,0 +1,3 @@
+- name: Restart munin-node
+  systemd: name=munin-node state=restarted enabled=yes
+  listen: "Restart munin-node"
