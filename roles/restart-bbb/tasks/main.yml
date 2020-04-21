@@ -1,0 +1,25 @@
+# check if check script exists
+- name: check if check script exists
+  stat:
+    path: /usr/local/bin/checkbbb_for_chost.py
+  register: st
+
+- name: Exit when stats script does not exist
+  fail:
+    msg: "Error: Check script doesnt exist."
+  when: not st.stat.exists
+
+- name: Provide restart script
+  copy:
+    src: restart-if-no-rooms.sh
+    dest: /usr/local/bin/restart-if-no-rooms.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Restart bbb when room_number ist zero 
+  command: /usr/local/bin/restart-if-no-rooms.sh
+  register: command_output
+
+- debug:
+    var: command_output.stdout_lines

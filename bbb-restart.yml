@@ -1,0 +1,8 @@
+- name: Restart BBBs without rooms
+  hosts: bigbluebutton
+  remote_user: root
+  become: no
+  gather_facts: no
+
+  roles:
+    - restart-bbb
