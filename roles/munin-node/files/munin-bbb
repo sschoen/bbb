@@ -2,7 +2,7 @@
 #
 # Call this script as bbb-X, where X is one of:
 #   numMeetings|numAttendees|numWithVoice|numWithVideo|numListeners
-# 
+#
 #
 #
 
@@ -32,7 +32,7 @@ EOF
             N=$(printf "%03d" $i)
             echo -n "${METRIC}-bbb$BHOST-${N} "
         done
-        echo
+        echo "${METRIC}-bbb$BHOST-SUM"
         echo "${METRIC}-bbb$BHOST-001.label bbb${BHOST}-001"
         echo "${METRIC}-bbb$BHOST-001.draw AREA"
         for i in $(seq 2 28) ; do
@@ -40,15 +40,17 @@ EOF
             echo "${METRIC}-bbb$BHOST-${N}.label bbb${BHOST}-${N}"
             echo "${METRIC}-bbb$BHOST-${N}.draw STACK"
         done
+        echo "${METRIC}-bbb$BHOST-SUM.label bbb${BHOST}-SUM"
+        echo "${METRIC}-bbb$BHOST-SUM.draw LINE"
         exit 0
         ;;
 esac
-
+S=0
 for i in $(seq 1 28) ; do
     N=$(printf "%03d" $i)
     V=$((grep -o "${METRIC}=[0-9]\+" "$MDIR/bbb${BHOST}-${N}/$CDIR" 2>/dev/null \
             || echo NaN ) | sed -e "s%${METRIC}=%%")
     echo "${METRIC}-bbb$BHOST-${N}.value ${V}"
+    [ $V != "NaN" ] && S=$(( S + V ))
 done
-
-
+echo "${METRIC}-bbb$BHOST-SUM.value ${S}"
