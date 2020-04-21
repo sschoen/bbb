@@ -17,9 +17,9 @@
     monhost_ip: "{{ vault_monhost_ip }}"
 
     ## list of debian containers to set up:
-    turnserver: "turn{{ inventory_hostname_short | replace('b3srv', '')}}"
+    turnserver: "turn{{ inventory_hostname | replace('b3srv', '')}}"
     debcontainer:
-      - "{{ turnserver }}"
+      - "{{ turnserver.split('.')[0] }}"
 
   roles:
     - up2date-debian
