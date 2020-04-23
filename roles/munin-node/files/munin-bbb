@@ -51,6 +51,6 @@ for i in $(seq 1 28) ; do
     V=$((grep -o "${METRIC}=[0-9]\+" "$MDIR/bbb${BHOST}-${N}/$CDIR" 2>/dev/null \
             || echo NaN ) | sed -e "s%${METRIC}=%%")
     echo "${METRIC}-bbb$BHOST-${N}.value ${V}"
-    [ $V != "NaN" ] && S=$(( S + V ))
+    [ $V != "NaN" ] && S="$(echo ${S} + ${V} | bc)"
 done
 echo "${METRIC}-bbb$BHOST-SUM.value ${S}"
