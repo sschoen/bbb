@@ -70,11 +70,11 @@
     dest: "/var/lib/machines/{{ item }}/usr/share/bbb-web/WEB-INF/classes/spring/turn-stun-servers.xml"
   loop: "{{ bbbcontainer }}"
 
-- name: Send BBB web root requests a 404
-  lineinfile:
-    path: "/var/lib/machines/{{ item }}/etc/nginx/sites-available/bigbluebutton"
-    line: "    return 404;"
-    insertafter: "^  location / {$"
+- name: Remove useless BBB index.html page
+  command: mv index.html index.html.orig
+  args:
+    chdir: "/var/lib/machines/{{ item }}/var/www/bigbluebutton-default/"
+    creates: "/var/lib/machines/{{ item }}/var/www/bigbluebutton-default/index.html.orig"
   loop: "{{ bbbcontainer }}"
 
 - name: Disable the disable-transparent-huge-pages.service
