@@ -96,13 +96,13 @@
 ## Use the ssh host keys here as a marker for resetting/cleaning BBB
 - name: Reset BBB
   command:
-    cmd: systemd-run --unit=bbb-conf -M {{ item }} -- /usr/bin/bbb-conf --clean
+    cmd: systemd-run --unit=bbb-conf-clean -M {{ item }} -- /usr/bin/bbb-conf --clean
     creates: "/var/lib/machines/{{ item }}/etc/ssh/ssh_host_*"
   loop: "{{ bbbcontainer }}"
 
 - name: Provide ssh-hostkey
   command:
-    cmd: systemd-run --unit=bbb-conf -M {{ item }} /usr/sbin/dpkg-reconfigure openssh-server
+    cmd: systemd-run --unit=ssh-hostkey -M {{ item }} /usr/sbin/dpkg-reconfigure openssh-server
     creates: "/var/lib/machines/{{ item }}/etc/ssh/ssh_host_*"
   loop: "{{ bbbcontainer }}"
 
