@@ -35,11 +35,9 @@
     file_type: link
     patterns:
       - "if_err_vb*"
-      - "if_err_enp198*"
-      - "if_err_enp5s0*"
+      - "if_err_enp*"
       - "if_vb*"
-      - "if_enp198*"
-      - "if_enp5s0*"
+      - "if_enp*"
       - "irqstats"
   register: result
 
