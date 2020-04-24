@@ -12,6 +12,7 @@ set -eu
 BHOST="$(echo $(hostname) | sed 's/b3srv//')"
 MDIR="/var/lib/machines/"
 CDIR="/var/cache/checkbbb/overview"
+BBBNUM="$(find $MDIR -maxdepth 1 -name "bbb???-???" | wc -l)"
 
 if [ "$(basename $0)" = "munin-bbb" ] ; then
     METRIC="numAttendees"
@@ -28,14 +29,14 @@ graph_info BBB Meeting Numbers: $METRIC
 graph_args -l 0
 EOF
         echo -n "graph_order "
-        for i in $(seq 1 28) ; do
+        for i in $(seq 1 ${BBBNUM}) ; do
             N=$(printf "%03d" $i)
             echo -n "${METRIC}-bbb$BHOST-${N} "
         done
         echo "${METRIC}-bbb$BHOST-SUM"
         echo "${METRIC}-bbb$BHOST-001.label bbb${BHOST}-001"
         echo "${METRIC}-bbb$BHOST-001.draw AREA"
-        for i in $(seq 2 28) ; do
+        for i in $(seq 2 ${BBBNUM}) ; do
             N=$(printf "%03d" $i)
             echo "${METRIC}-bbb$BHOST-${N}.label bbb${BHOST}-${N}"
             echo "${METRIC}-bbb$BHOST-${N}.draw STACK"
@@ -46,7 +47,7 @@ EOF
         ;;
 esac
 S=0
-for i in $(seq 1 28) ; do
+for i in $(seq 1 ${BBBNUM}) ; do
     N=$(printf "%03d" $i)
     V=$((grep -o "${METRIC}=[0-9]\+" "$MDIR/bbb${BHOST}-${N}/$CDIR" 2>/dev/null \
             || echo NaN ) | sed -e "s%${METRIC}=%%")
