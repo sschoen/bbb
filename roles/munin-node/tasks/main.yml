@@ -14,7 +14,7 @@
 - name: Allow access to containers
   file:
     path: /var/lib/machines
-    mode: "0711"
+    mode: "0755"
 
 - name: Activate plugins
   file:
