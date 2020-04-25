@@ -12,7 +12,7 @@ set -eu
 BHOST="$(echo $(hostname) | sed 's/b3srv//')"
 MDIR="/var/lib/machines/"
 CDIR="/var/cache/checkbbb/overview"
-BBBNUM="$(find $MDIR -maxdepth 1 -name "bbb???-???" | wc -l)"
+BBBNUM="$(find /etc/systemd/nspawn/ -maxdepth 1 -name "bbb???-???.nspawn" | wc -l)"
 
 if [ "$(basename $0)" = "munin-bbb" ] ; then
     METRIC="numAttendees"

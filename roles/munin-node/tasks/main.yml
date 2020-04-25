@@ -3,6 +3,7 @@
     name:
       - munin-node
       - bc
+      - acl
     state: latest
 
 - name: Provide munin plugin script
@@ -11,10 +12,13 @@
     dest: /usr/local/bin/munin-bbb
     mode: "0755"
 
-- name: Allow access to containers
-  file:
-    path: /var/lib/machines
-    mode: "0755"
+- name: Allow munin (nobody) access to BBBs
+  acl:
+    path: "/var/lib/machines"
+    entity: nobody
+    etype: user
+    permissions: x
+    state: present
 
 - name: Activate plugins
   file:
