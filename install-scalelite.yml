@@ -4,8 +4,9 @@
   become: no
   vars_files: vault
   vars:
-    static_auth_secret: "{{ vault_static_auth_secret }}"
-    monhost_ip: "{{ vault_monhost_ip }}"
+    scalelite_localnet: "{{ vault_scalelite_localnet }}"
+    scalelite_pg_password: "{{ vault_scalelite_pg_password }}"
+    scalelite_dockernet: "{{ vault_scalelite_dockernet }}"
 
   vars_prompt:
     - name: "letsencryptemail"

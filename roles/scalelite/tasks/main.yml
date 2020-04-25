@@ -1,46 +1,6 @@
-- set_fact: hostname="{{ ansible_nodename }}"
-- set_fact: domainname="{{ ansible_domain }}"
-- set_fact: bbbfqdn="{{ ansible_fqdn }}"
-
-- name: install packages
-  apt:
-    name:
-      - certbot
-      - acl
-    state: latest
-
-- name: fetch LE certificate
-  command:
-    cmd: >
-      certbot certonly
-      --standalone
-      --noninteractive
-      --agree-tos
-      --preferred-challenges http
-      --email {{ letsencryptemail }}
-      --deploy-hook 'systemctl restart coturn'
-      -d {{ inventory_hostname }}
-    creates: /etc/letsencrypt/live/
-  when: letsencryptemail is defined and letsencryptemail | length > 0
-
-- name: Fix hosts file for FQDN
-  lineinfile:  
-    state=present
-    dest=/etc/hosts
-    line="{{ ansible_default_ipv4.address }} {{ bbbfqdn }} {{ hostname }}"
-    regexp="^{{ ansible_default_ipv4.address }}"
-
-- name: Remove entry for 127.0.1.1 in /etc/hosts
-  lineinfile:  
-    state=absent
-    dest=/etc/hosts
-    regexp='^127\.0\.1\.1'
-
-- name: Change the hostname
-  hostname:
-    name="{{ hostname }}"
-
-
+- import_tasks: prepare.yml
+- import_tasks: postgres.yml
+  
 
 
 
