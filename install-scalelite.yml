@@ -7,6 +7,8 @@
     scalelite_localnet: "{{ vault_scalelite_localnet }}"
     scalelite_pg_password: "{{ vault_scalelite_pg_password }}"
     scalelite_dockernet: "{{ vault_scalelite_dockernet }}"
+    scalelite_secondaryip: "{{ vault_scalelite_secondaryip }}"
+    scalelite_redispassword: "{{ vault_scalelite_redispassword }}"
 
   vars_prompt:
     - name: "letsencryptemail"
