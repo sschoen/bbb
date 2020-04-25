@@ -1,3 +1,3 @@
 bbbcontainer: []
-MemoryMax: 20G
+MemoryHigh: 20G
 CPUQuota: 800%

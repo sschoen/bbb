@@ -51,10 +51,10 @@
 
 
 
-- name: Set container property MemoryMax
+- name: Set container property MemoryHigh
   command:
-    cmd: systemctl set-property systemd-nspawn@{{ item }} MemoryMax={{ MemoryMax }}
-    creates: /etc/systemd/system.control/systemd-nspawn@{{ item }}.service.d/50-MemoryMax.conf
+    cmd: systemctl set-property systemd-nspawn@{{ item }} MemoryHigh={{ MemoryHigh }}
+    creates: /etc/systemd/system.control/systemd-nspawn@{{ item }}.service.d/50-MemoryHigh.conf
   loop: "{{ bbbcontainer }}"
 
 - name: Set container property CPUQuota
