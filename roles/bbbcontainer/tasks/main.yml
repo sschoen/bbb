@@ -88,10 +88,14 @@
     name: systemd-nspawn@{{ item }}.service
     state: started
   loop: "{{ bbbcontainer }}"
+  tags:
+    - check
 
 - name: Wait a minute for containers to settle
   pause:
     minutes: 1
+  tags:
+    - check
 
 ## Use the ssh host keys here as a marker for resetting/cleaning BBB
 - name: Reset BBB
