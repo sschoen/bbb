@@ -1,0 +1,3 @@
+- name: restart coturn
+  systemd: name=coturn state=restarted enabled=yes
+  listen: "restart coturn"
