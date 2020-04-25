@@ -4,6 +4,8 @@
     container: "{{ container }} + [ '{{ item }}' ]"
   when: lookup('dig', item ~ '.' ~ ansible_domain) | ipaddr(guest_network)
   loop: "{{ debcontainer }}"
+  tags:
+    - check
 
 - name: debootstrap minimal system
   command:
@@ -60,3 +62,5 @@
     name: systemd-nspawn@{{ item }}.service
     state: started
   loop: "{{ container }}"
+  tags:
+    - check
