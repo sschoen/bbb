@@ -1,0 +1,24 @@
+- name: Get repository key for docker repository
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: get lsb_release
+  shell: lsb_release -cs
+  register: release
+
+- set_fact:
+    lsb_release={{ release.stdout }}
+
+- name: Add docker repository to sources.list
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ lsb_release }} stable
+    state: present
+
+- name: Update APT package cache
+  apt: update_cache=yes
+
+- name: Install docker packages
+  apt: state=present pkg={{ docker_packages }}
+
+

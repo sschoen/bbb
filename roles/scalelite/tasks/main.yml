@@ -1,6 +1,7 @@
 - import_tasks: prepare.yml
 - import_tasks: postgres.yml
 - import_tasks: redis.yml
+- import_tasks: docker.yml
   
 
 
