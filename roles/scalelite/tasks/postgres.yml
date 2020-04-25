@@ -34,6 +34,12 @@
     name: scalelite
     owner: scalelite
 
+- name: Configure postgres config bind address
+  lineinfile:
+    path: /etc/postgresql/10/main/postgresql.conf
+    regex: '^listen_addresses.*'
+    line: listen_addresses = 'localhost, {{ scalelite_secondaryip }}'
+
 - name: Restart postgresql
   systemd: name=postgresql state=restarted enabled=yes
 

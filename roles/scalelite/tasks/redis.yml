@@ -1,0 +1,26 @@
+- name: Configure redis config bind address
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regex: '^bind.*'
+    line: bind 127.0.0.1 {{ scalelite_secondaryip }} ::1 
+
+- name: Configure redis config supervised
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regex: '^supervised.*'
+    line: supervised systemd
+
+- name: Configure redis requirepass
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regex: '^requirepass.*'
+    line: requirepass "{{ scalelite_redispassword }}"
+
+- name: Restart redis
+  systemd: name=redis-server state=restarted enabled=yes
+
+
+
+
+
+
