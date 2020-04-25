@@ -1,0 +1,17 @@
+URL_HOST={{ inventory_hostname }}
+# Erstellt mit 'openssl rand -hex 64'
+SECRET_KEY_BASE={{ scalelite_secret_key_base }}
+# Erstellt mit 'openssl rand -hex 32'
+LOADBALANCER_SECRET={{ scalelite_loadbalancer_secret }}
+# Sollte lt. https://github.com/blindsidenetworks/scalelite/blob/master/README.md#Configuration
+# in dieser Form sein postgresql://username:password@connection_url
+# Laut https://guides.rubyonrails.org/configuring.html#configuring-a-database
+# wäre das zu nehmen postgresql://localhost/blog_development?pool=5
+DATABASE_URL=postgresql://scalelite:{{ scalelite_pg_password }}@{{ scalelite_secondaryip }}/scalelite
+# Sollte lt. https://rubydoc.info/github/redis/redis-rb/master/Redis#initialize-instance_method
+# in dieser Form sein: redis://:[password]@[hostname] sein.
+REDIS_URL=redis://:{{ scalelite_redispassword }}@{{ scalelite_secondaryip }}
+SCALELITE_TAG=v1
+SCALELITE_RECORDING_DIR=/mnt/scalelite-recordings/var/bigbluebutton
+NGINX_SSL=true
+SCALELITE_NGINX_EXTRA_OPTS=--mount type=bind,source=/etc/letsencrypt,target=/etc/nginx/ssl,readonly

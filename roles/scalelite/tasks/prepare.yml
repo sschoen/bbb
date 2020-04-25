@@ -6,6 +6,8 @@
       - python-psycopg2
       - python-ipaddress
       - python-ipaddr
+      - python-docker
+      - python3-docker
       - postgresql 
       - postgresql-contrib
       - redis-server

@@ -1,3 +1,4 @@
 - name: restart postgres
   systemd: name=postgresql state=restarted enabled=yes
   listen: "restart postgresql"
+

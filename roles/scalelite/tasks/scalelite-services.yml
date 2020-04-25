@@ -1,0 +1,58 @@
+- name: Create /etc/systemd/system/scalelite.target
+  copy:
+    src: scalelite.target
+    dest: /etc/systemd/system/scalelite.target
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create /etc/systemd/system/scalelite-api.service
+  copy:
+    src: scalelite-api.service
+    dest: /etc/systemd/system/scalelite-api.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create /etc/systemd/system/scalelite-nginx.service
+  copy:
+    src: scalelite-nginx.service
+    dest: /etc/systemd/system/scalelite-nginx.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create /etc/systemd/system/scalelite-poller.service
+  copy:
+    src: scalelite-poller.service
+    dest: /etc/systemd/system/scalelite-poller.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy template to /etc/default/scalelite
+  template:
+    src: scalelite.j2
+    dest: /etc/default/scalelite
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create scalelite docker network
+  docker_network:
+    name: scalelite
+
+- name: enable services
+  systemd: name=scalelite-api.service state=stopped enabled=yes
+  systemd: name=scalelite-nginx.service state=stopped enabled=yes
+  systemd: name=scalelite.target state=stopped enabled=yes
+  systemd: name=scalelite-poller.service state=stopped enabled=yes
+
+- name: restart scalelight
+  systemd: name=scalelite.target state=restarted enabled=yes
+
+- name: Create /mnt/scalelite-recordings/var/bigbluebutton/published
+  file:
+    path: /mnt/scalelite-recordings/var/bigbluebutton/published
+    state: directory
+
