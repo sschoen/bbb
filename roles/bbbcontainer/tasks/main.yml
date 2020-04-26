@@ -94,7 +94,7 @@
   command: mv index.html index.html.orig
   args:
     chdir: "/var/lib/machines/{{ item }}/var/www/bigbluebutton-default/"
-    creates: "/var/lib/machines/{{ item }}/var/www/bigbluebutton-default/index.html.orig"
+    removes: "/var/lib/machines/{{ item }}/var/www/bigbluebutton-default/index.html"
   loop: "{{ bbbcontainer }}"
 
 - name: Disable the disable-transparent-huge-pages.service
