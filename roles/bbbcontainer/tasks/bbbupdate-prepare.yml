@@ -13,6 +13,10 @@
   delegate_to: "{{ item }}.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
 
+- name: Wait a minute for containers to settle
+  pause:
+    minutes: 1
+
 - name: Stop containers form containerhost
   systemd:
     name: systemd-nspawn@{{ item }}.service
