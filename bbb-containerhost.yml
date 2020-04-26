@@ -1,4 +1,3 @@
-
 - name: Install containerhost for LFB BBB
   hosts: containerhost
   remote_user: root

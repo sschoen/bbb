@@ -18,6 +18,12 @@
   tags:
     - always
 
+# for updating the bbbs, include bbbupdate.yml
+- name: Import BBB update tasks step one
+  import_tasks: bbbupdate-prepare.yml 
+  tags:
+    - bbb_update
+
 - name: Fetch and/or clone container image
   script: mkbbbcont {{ container_image }} {{ item }} {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
   args:
@@ -196,3 +202,10 @@
     label: "{{ item.item }}"
   tags:
     - check_containers
+
+# for updating the bbbs, include bbbupdate-finish.yml
+- name: Import BBB update tasks step two
+  import_tasks: bbbupdate-finish.yml 
+  tags:
+    - bbb_update
+
