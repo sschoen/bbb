@@ -10,6 +10,10 @@
       - debootstrap
       - bridge-utils
       - tmux
+    skip_bbbs:
+      - bbb002-009
+      - bbb002-010
+      - bbb002-011
 
     guest_network: "{{ vault_guest_network }}"
     static_auth_secret: "{{ vault_static_auth_secret }}"

@@ -3,6 +3,7 @@
   delegate_to: "scale001.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
 
+
 - name: Update apt package cache on container and run dist-upgrade
   apt:
     update-cache: yes
@@ -12,16 +13,9 @@
   delegate_to: "{{ item }}.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
 
-- name: Update apt package cache on container an run dist-upgrade
-  apt:
-    update-cache: yes
-    upgrade: dist
-    autoremove: yes
-    autoclean: yes
-  delegate_to: "{{ item }}.{{ ansible_domain }}"
-  loop: "{{ bbbcontainer }}"
-
-- name: Poweroff the containers from containerhost
-  shell: machinectl poweroff "{{ item }}"
+- name: Stop containers form containerhost
+  systemd:
+    name: systemd-nspawn@{{ item }}.service
+    state: stopped
   loop: "{{ bbbcontainer }}"
 
