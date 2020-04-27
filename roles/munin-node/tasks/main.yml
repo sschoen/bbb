@@ -12,13 +12,17 @@
     dest: /usr/local/bin/munin-bbb
     mode: "0755"
 
-- name: Allow munin (nobody) access to BBBs
-  acl:
-    path: "/var/lib/machines"
-    entity: nobody
-    etype: user
-    permissions: x
-    state: present
+- name: Make sure bbb-stats dir exists
+  file:
+    path: /var/log/bbb-stats/
+    state: directory
+
+- name: Provide access to data through hard links
+  file:
+    src: "/var/lib/machines/{{ item }}/var/cache/checkbbb/overview"
+    dest: "/var/log/bbb-stats/{{ item }}"
+    state: hard
+  loop: "{{ bbbcontainer }}"
 
 - name: Activate plugins
   file:
