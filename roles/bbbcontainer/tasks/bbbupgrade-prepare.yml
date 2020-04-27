@@ -3,6 +3,10 @@
   delegate_to: "scale001.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
 
+- name: Wait for meetings to end on the server
+  pause:
+    minutes: 120
+
 - name: Update apt package cache on container and run full-upgrade
   apt:
     update-cache: yes
