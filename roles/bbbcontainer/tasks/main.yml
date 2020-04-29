@@ -206,3 +206,23 @@
 - name: Import BBB upgrade tasks step two
   import_tasks: bbbupgrade-finish.yml
   when: bbb_upgrade is defined and bbb_upgrade | bool
+
+
+###########################
+####### WORKAROUNDS #######
+###########################
+
+## Issue: Kurento goes crazy from time to time, taking all CPU time it
+## can get.
+## Make sure it is restarted daily until a propper fix is available.
+## The upstream cronjob in '/etc/cron.hourly/bbb-restart-kms' fails if
+## there are still users in meetings.
+
+- name: Make sure Kurento is restarted every day
+  lineinfile:
+    path: "/var/lib/machines/{{ item }}/etc/cron.daily/bigbluebutton"
+    regexp: "^systemctl restart kurento-media-server"
+    line: >-
+      systemctl restart kurento-media-server bbb-webrtc-sfu &&
+      date +%Y-%m-%d\ %H:%M:%S > /var/tmp/bbb-kms-last-restart.txt
+  loop: "{{ bbbcontainer }}"
