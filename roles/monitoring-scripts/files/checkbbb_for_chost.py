@@ -25,14 +25,24 @@ def print2file(line):
 
 
 def checkBBBStatus():
+	# get BBB Version and build
+	stream = os.popen('bbb-conf --check | grep "Server"')
+	output = stream.read().strip().replace("BigBlueButton Server ", "").split()
+	version = output[0]
+	build = output[1].replace("(","").replace(")","")
+	vstatus = "[BBB v" + version + " b" + build + "] "
+	version = version.replace(".","")
+	versiondata = " version=" + version + "|" + "build=" + build + " "
+
+	# get status of BBB components
 	stream = os.popen('bbb-conf --status 2> /dev/null')
 	output = stream.read().strip()
 	checkname    = socket.gethostname() + "-services"
 	checkstatus = 0
 	activenum = 0
 	inactivenum = 0
-	statusline = ""
-	
+	statusline = "" 
+		
 	for line in output.splitlines():
 		parts = line.split()
 		service = parts[0]
@@ -48,7 +58,7 @@ def checkBBBStatus():
 	
 	checks = activenum + inactivenum
 	checkcount = "[" + str(activenum) + "/" + str(checks) + " active] "
-	print2file(str(checkstatus) + " " + checkname + " - " + checkcount + statusline )
+	print2file(str(checkstatus) + " " + checkname + versiondata + vstatus + checkcount + statusline )
 	return checkstatus
 
 def getApiChecksum():

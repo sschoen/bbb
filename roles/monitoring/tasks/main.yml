@@ -55,6 +55,23 @@
     mode: 0700
   when: "'b3srv' in inventory_hostname"
 
+- name: Copy check_procs to /usr/local/sbin/check_procs on target
+  copy:
+    src: check_procs
+    dest: usr/local/sbin/check_procs
+    owner: root
+    group: root
+    mode: 0755
+  when: "'b3srv' in inventory_hostname"
+
+- name: Copy template to mrpe.cfg on target
+  template:
+    src: mrpe.cfg.j2
+    dest: /etc/check_mk/mrpe.cfg
+    owner: root
+    group: root
+    mode: '0644'
+
 
 - name: Copy template to xinetd check_mk config
   template:
