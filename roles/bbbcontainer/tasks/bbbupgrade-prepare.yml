@@ -1,0 +1,27 @@
+- name: Disable BBBs on scalelite
+  command: "/usr/local/sbin/bbb-poolserver disable {{ item }}"
+  delegate_to: "scale001.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
+
+- name: Wait for meetings to end on the server
+  pause:
+    minutes: 120
+
+- name: Update apt package cache on container and run full-upgrade
+  apt:
+    update-cache: yes
+    upgrade: full
+    autoremove: yes
+    autoclean: yes
+  delegate_to: "{{ item }}.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
+
+- name: Wait a minute for containers to settle
+  pause:
+    minutes: 1
+
+- name: Stop containers from containerhost
+  systemd:
+    name: systemd-nspawn@{{ item }}.service
+    state: stopped
+  loop: "{{ bbbcontainer }}"

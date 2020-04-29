@@ -10,6 +10,7 @@
       - systemd-container
       - debootstrap
       - bridge-utils
+      - tmux
 
     guest_network: "{{ vault_guest_network }}"
     static_auth_secret: "{{ vault_static_auth_secret }}"
@@ -21,11 +22,26 @@
     debcontainer:
       - "{{ turnserver.split('.')[0] }}"
 
-  roles:
-    - up2date-debian
-    - security
-    - prepare-containerhost
-    - debcontainer
-    - bbbcontainer
-    - monitoring
-    - munin-node
+  tasks:
+    - import_role:
+        name: up2date-debian
+    - import_role:
+        name: security
+      tags:
+        - on_install
+    - import_role:
+        name: prepare-containerhost
+      tags:
+        - on_install
+    - import_role:
+        name: debcontainer
+    - import_role:
+        name: bbbcontainer
+    - import_role:
+        name: monitoring
+      tags:
+        - on_install
+    - import_role:
+        name: munin-node
+      tags:
+        - on_install

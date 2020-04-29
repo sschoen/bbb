@@ -4,6 +4,8 @@
   copy:
     src: transparent_hugepage.conf
     dest: /etc/tmpfiles.d/transparent_hugepage.conf
+  tags:
+    - on_install
 
 - name: Generate list of available BBBs
   set_fact:
@@ -14,14 +16,20 @@
     end={{ guest_network | ipaddr('size') | int - 2 - debcontainer | length }}
     format=bbb{{ ansible_hostname | replace('b3srv', '')}}-%03d
   tags:
-    - check
+    - always
+
+# for upgrading the BBBs, include bbbupgrade.yml
+- name: Import BBB upgrade tasks step one
+  import_tasks: bbbupgrade-prepare.yml
+  when: bbb_upgrade is defined and bbb_upgrade | bool
 
 - name: Fetch and/or clone container image
   script: mkbbbcont {{ container_image }} {{ item }} {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
   args:
     creates: "/var/lib/machines/{{ item }}"
   loop: "{{ bbbcontainer }}"
-
+  tags:
+    - on_install
 
 ## Provide all other configuration here:
 - name: Provide container configuration
@@ -29,18 +37,24 @@
     src: containercfg.nspawn.j2
     dest: "/etc/systemd/nspawn/{{ item }}.nspawn"
   loop: "{{ bbbcontainer }}"
+  tags:
+    - on_install
 
 - name: Provide individual container nic config
   template:
     src: interfaces.j2
     dest: "/var/lib/machines/config/{{ item }}_interfaces"
   loop: "{{ bbbcontainer }}"
+  tags:
+    - on_install
 
 - name: Provide individual hosts file
   template:
     src: hosts.j2
     dest: "/var/lib/machines/config/{{ item }}_hosts"
   loop: "{{ bbbcontainer }}"
+  tags:
+    - on_install
 
 - name: Provide hostname
   lineinfile:
@@ -48,7 +62,8 @@
     line: "{{ item }}"
     create: yes
   loop: "{{ bbbcontainer }}"
-
+  tags:
+    - on_install
 
 
 - name: Set container property MemoryHigh
@@ -56,12 +71,16 @@
     cmd: systemctl set-property systemd-nspawn@{{ item }} MemoryHigh={{ MemoryHigh }}
     creates: /etc/systemd/system.control/systemd-nspawn@{{ item }}.service.d/50-MemoryHigh.conf
   loop: "{{ bbbcontainer }}"
+  tags:
+    - on_install
 
 - name: Set container property CPUQuota
   command:
     cmd: systemctl set-property systemd-nspawn@{{ item }} CPUQuota={{ CPUQuota }}
     creates: /etc/systemd/system.control/systemd-nspawn@{{ item }}.service.d/50-CPUQuota.conf
   loop: "{{ bbbcontainer }}"
+  tags:
+    - on_install
 
 
 - name: Set stun and turn servers
@@ -74,7 +93,7 @@
   command: mv index.html index.html.orig
   args:
     chdir: "/var/lib/machines/{{ item }}/var/www/bigbluebutton-default/"
-    creates: "/var/lib/machines/{{ item }}/var/www/bigbluebutton-default/index.html.orig"
+    removes: "/var/lib/machines/{{ item }}/var/www/bigbluebutton-default/index.html"
   loop: "{{ bbbcontainer }}"
 
 - name: Disable the disable-transparent-huge-pages.service
@@ -83,19 +102,33 @@
     state: absent
   loop: "{{ bbbcontainer }}"
 
+- name: Disable freeswitch IO scheduling optimization
+  replace:
+    path: "/var/lib/machines/{{ item }}/lib/systemd/system/freeswitch.service"
+    regexp: "(^IOScheduling.*)"
+    replace: '#\1'
+  loop: "{{ bbbcontainer }}"
+
+- name: Disable freeswitch CPU scheduling optimization
+  replace:
+    path: "/var/lib/machines/{{ item }}/lib/systemd/system/freeswitch.service"
+    regexp: "(^CPUScheduling.*)"
+    replace: '#\1'
+  loop: "{{ bbbcontainer }}"
+
 - name: Start containers
   systemd:
     name: systemd-nspawn@{{ item }}.service
     state: started
   loop: "{{ bbbcontainer }}"
   tags:
-    - check
+    - always
 
 - name: Wait a minute for containers to settle
   pause:
     minutes: 1
   tags:
-    - check
+    - always
 
 ## Use the ssh host keys here as a marker for resetting/cleaning BBB
 - name: Reset BBB
@@ -103,26 +136,30 @@
     cmd: systemd-run --unit=bbb-conf-clean -M {{ item }} -- /usr/bin/bbb-conf --clean
     creates: "/var/lib/machines/{{ item }}/etc/ssh/ssh_host_*"
   loop: "{{ bbbcontainer }}"
+  tags:
+    - on_install
+
+- name: Wait a minute for containers to settle
+  pause:
+    minutes: 1
+  tags:
+    - on_install
 
 - name: Provide ssh-hostkey
   command:
     cmd: systemd-run --unit=ssh-hostkey -M {{ item }} /usr/sbin/dpkg-reconfigure openssh-server
     creates: "/var/lib/machines/{{ item }}/etc/ssh/ssh_host_*"
   loop: "{{ bbbcontainer }}"
-
+  tags:
+    - on_install
 
 ## Check container and BBB services
-
-- name: Wait a minute for containers to settle
-  pause:
-    minutes: 1
-
 - name: Container status check
   command: systemctl list-machines
   register: status
   changed_when: status.stdout is search("degraded")
   tags:
-    - check
+    - check_containers
 
 - name: Show output
   debug:
@@ -130,7 +167,7 @@
   changed_when: status.stdout is search("degraded")
   when: status.stdout_lines is defined and status.stdout is search("degraded")
   tags:
-    - check
+    - check_containers
 
 - name: Run BBB status check on containers
   command: systemd-run --unit=bbb-conf -M {{ item }} -- /usr/bin/bbb-conf --status
@@ -138,13 +175,13 @@
   changed_when: "status.stderr is not search('Running as unit: bbb-conf.service')"
   loop: "{{ bbbcontainer }}"
   tags:
-    - check
+    - check_containers
 
 - name: Wait 5 seconds for status check results
   pause:
     seconds: 5
   tags:
-    - check
+    - check_containers
 
 - name: Check BBB status results
   command: journalctl --unit=bbb-conf --lines=14 --all -M {{ item }}
@@ -152,7 +189,7 @@
   changed_when: bbb_status.stdout is search('inactive') or bbb_status.stdout is search('failed')
   loop: "{{ bbbcontainer }}"
   tags:
-    - check
+    - check_containers
 
 - name: Show bad BBB status results
   debug:
@@ -163,4 +200,29 @@
   loop_control:
     label: "{{ item.item }}"
   tags:
-    - check
+    - check_containers
+
+# for upgrading the BBBs, include bbbupgrade-finish.yml
+- name: Import BBB upgrade tasks step two
+  import_tasks: bbbupgrade-finish.yml
+  when: bbb_upgrade is defined and bbb_upgrade | bool
+
+
+###########################
+####### WORKAROUNDS #######
+###########################
+
+## Issue: Kurento goes crazy from time to time, taking all CPU time it
+## can get.
+## Make sure it is restarted daily until a propper fix is available.
+## The upstream cronjob in '/etc/cron.hourly/bbb-restart-kms' fails if
+## there are still users in meetings.
+
+- name: Make sure Kurento is restarted every day
+  lineinfile:
+    path: "/var/lib/machines/{{ item }}/etc/cron.daily/bigbluebutton"
+    regexp: "^systemctl restart kurento-media-server"
+    line: >-
+      systemctl restart kurento-media-server bbb-webrtc-sfu &&
+      date +%Y-%m-%d\ %H:%M:%S > /var/tmp/bbb-kms-last-restart.txt
+  loop: "{{ bbbcontainer }}"

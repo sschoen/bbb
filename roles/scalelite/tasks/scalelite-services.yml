@@ -42,11 +42,17 @@
   docker_network:
     name: scalelite
 
-- name: enable services
+- name: enable api service
   systemd: name=scalelite-api.service state=stopped enabled=yes
+
+- name: enable api service
   systemd: name=scalelite-nginx.service state=stopped enabled=yes
-  systemd: name=scalelite.target state=stopped enabled=yes
+
+- name: enable poller service
   systemd: name=scalelite-poller.service state=stopped enabled=yes
+
+- name: enable ascalelite target 
+  systemd: name=scalelite.target state=stopped enabled=yes
 
 - name: restart scalelight
   systemd: name=scalelite.target state=restarted enabled=yes

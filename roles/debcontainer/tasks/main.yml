@@ -5,7 +5,7 @@
   when: lookup('dig', item ~ '.' ~ ansible_domain) | ipaddr(guest_network)
   loop: "{{ debcontainer }}"
   tags:
-    - check
+    - always
 
 - name: debootstrap minimal system
   command:
@@ -17,6 +17,8 @@
     chdir: /var/lib/machines/
     creates: "/var/lib/machines/{{ item }}"
   loop: "{{ container }}"
+  tags:
+    - on_install
 
 - name: Provide authorized_keys
   copy:
@@ -24,6 +26,8 @@
     dest: "/var/lib/machines/{{ item }}/root/"
     remote_src: yes
   loop: "{{ container }}"
+  tags:
+    - on_install
 
 ## there is no root password, so no need to disable ssh password authentication
 #  lineinfile:
@@ -37,18 +41,24 @@
     src: containercfg.nspawn.j2
     dest: "/etc/systemd/nspawn/{{ item }}.nspawn"
   loop: "{{ container }}"
+  tags:
+    - on_install
 
 - name: Provide individual container nic config
   template:
     src: interfaces.j2
     dest: "/var/lib/machines/config/{{ item }}_interfaces"
   loop: "{{ container }}"
+  tags:
+    - on_install
 
 - name: Provide individual hosts file
   template:
     src: hosts.j2
     dest: "/var/lib/machines/config/{{ item }}_hosts"
   loop: "{{ container }}"
+  tags:
+    - on_install
 
 - name: Provide hostname
   lineinfile:
@@ -56,6 +66,8 @@
     line: "{{ item }}"
     create: yes
   loop: "{{ container }}"
+  tags:
+    - on_install
 
 - name: Start containers
   systemd:
@@ -63,4 +75,4 @@
     state: started
   loop: "{{ container }}"
   tags:
-    - check
+    - always
