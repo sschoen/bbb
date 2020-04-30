@@ -3,7 +3,6 @@
     name:
       - munin-node
       - bc
-      - acl
     state: latest
 
 - name: Provide munin plugin script
@@ -42,9 +41,10 @@
     paths: /etc/munin/plugins/
     file_type: link
     patterns:
-      - "if_err_vb*"
+      - "if_err_vb-bbb*"
+      - "if_err_virbr0"
       - "if_err_enp*"
-      - "if_vb*"
+      - "if_vb-bbb*"
       - "if_enp*"
       - "irqstats"
   register: result
