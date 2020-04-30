@@ -1,0 +1,3 @@
+monhost_ip: "{{ vault_monhost_ip }}"
+kurento_cpu_warn: "{{ vault_kurento_cpu_warn }}"
+kurento_cpu_crit: "{{ vault_kurento_cpu_crit }}"
