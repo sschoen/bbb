@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 
 BBBS=$(machinectl list | grep bbb | awk '{print $1}')
 
