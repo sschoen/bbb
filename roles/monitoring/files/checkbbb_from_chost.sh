@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 
 BBBS=$(machinectl list | grep bbb | awk '{print $1}')
 
@@ -7,7 +7,7 @@ for h in $BBBS; do
 done
 
 # Wait for the units to finish
-sleep 2
+sleep 4
 
 # Get results
 sumM=0

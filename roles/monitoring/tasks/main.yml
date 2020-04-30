@@ -58,7 +58,7 @@
 - name: Copy check_procs to /usr/local/sbin/check_procs on target
   copy:
     src: check_procs
-    dest: usr/local/sbin/check_procs
+    dest: /usr/local/sbin/check_procs
     owner: root
     group: root
     mode: 0755
