@@ -96,6 +96,13 @@
     removes: "/var/lib/machines/{{ item }}/var/www/bigbluebutton-default/index.html"
   loop: "{{ bbbcontainer }}"
 
+- name: Make sure recordings are disabled
+  lineinfile:
+    path: "/var/lib/machines/{{ item }}/usr/share/bbb-web/WEB-INF/classes/bigbluebutton.properties"
+    regexp: "^disableRecordingDefault="
+    line: "disableRecordingDefault=true"
+  loop: "{{ bbbcontainer }}"
+
 - name: Disable the disable-transparent-huge-pages.service
   file:
     path: "/var/lib/machines/{{ item }}/etc/systemd/system/multi-user.target.wants/disable-transparent-huge-pages.service"
