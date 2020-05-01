@@ -2,7 +2,6 @@
   apt:
     name:
       - munin-node
-      - bc
     state: latest
 
 - name: Provide munin plugin script
@@ -11,17 +10,11 @@
     dest: /usr/local/bin/munin-bbb
     mode: "0755"
 
-- name: Make sure bbb-stats dir exists
-  file:
-    path: /var/log/bbb-stats/
-    state: directory
-
-- name: Provide access to data through hard links
-  file:
-    src: "/var/lib/machines/{{ item }}/var/cache/checkbbb/overview"
-    dest: "/var/log/bbb-stats/{{ item }}"
-    state: hard
-  loop: "{{ bbbcontainer }}"
+- name: Run plugin as root to allow access to data
+  copy:
+    src: "munin-bbb.conf"
+    dest: "/etc/munin/plugin-conf.d/munin-bbb.conf"
+  notify: Restart munin-node
 
 - name: Activate plugins
   file:
@@ -48,6 +41,7 @@
       - "if_enp*"
       - "irqstats"
   register: result
+  notify: Restart munin-node
 
 - name: Remove unnecessary plugins
   file:

@@ -10,8 +10,9 @@ CFG="$1"
 set -eu
 
 BHOST="$(echo $(hostname) | sed 's/b3srv//')"
-DATADIR="/var/log/bbb-stats/"
-BBBNUM="$(find $DATADIR -maxdepth 1 -name "bbb???-???" | wc -l)"
+MDIR="/var/lib/machines/"
+DATA="/var/cache/checkbbb/overview"
+BBBNUM="$(find $MDIR -maxdepth 1 -name "bbb???-???" | wc -l)"
 
 if [ "$(basename $0)" = "munin-bbb" ] ; then
     METRIC="numAttendees"
@@ -45,12 +46,14 @@ EOF
         exit 0
         ;;
 esac
+
 S=0
+STR=""
 for i in $(seq 1 ${BBBNUM}) ; do
     N=$(printf "%03d" $i)
-    V=$((grep -o "${METRIC}=[0-9]\+" "$DATADIR/bbb${BHOST}-${N}" 2>/dev/null \
-            || echo NaN ) | sed -e "s%${METRIC}=%%")
-    echo "${METRIC}-bbb$BHOST-${N}.value ${V}"
-    [ $V != "NaN" ] && S="$(echo ${S} + ${V} | bc)"
+    V=$((grep -o "${METRIC}=[0-9]\+" "${MDIR}/bbb${BHOST}-${N}/${DATA}" 2>/dev/null \
+            || true ) | sed -e "s%${METRIC}=%%")
+    STR="${STR}${METRIC}-bbb$BHOST-${N}.value ${V}\n"
+    [ -n "$V" ] && S=$(( ${S} + ${V} ))
 done
-echo "${METRIC}-bbb$BHOST-SUM.value ${S}"
+echo -e "${STR}${METRIC}-bbb$BHOST-SUM.value ${S}"
