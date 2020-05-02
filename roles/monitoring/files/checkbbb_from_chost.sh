@@ -1,7 +1,14 @@
 #!/bin/bash
 
+# get list of bbb containers
 BBBS=$(machinectl list | grep bbb | awk '{print $1}')
 
+# make sure, all previous check services are stopped
+for h in $BBBS; do
+        systemctl -M $h stop checkmk_bbb > /dev/null 2>&1
+done
+
+# launch check in containers to get new results
 for h in $BBBS; do
 	systemd-run --unit="checkmk_bbb" -M $h -- /usr/local/bin/checkbbb_for_chost.py > /dev/null 2>&1
 done
@@ -9,7 +16,7 @@ done
 # Wait for the units to finish
 sleep 4
 
-# Get results
+# evaluate results
 sumM=0
 sumAtt=0
 sumVid=0

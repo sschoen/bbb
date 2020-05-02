@@ -37,15 +37,6 @@
     state: enabled
   when: ufw_dir.stat.exists == true
 
-- name: Copy checkbbb.py to /usr/lib/check_mk_agent/local on target
-  copy:
-    src: checkbbb.py
-    dest: /usr/lib/check_mk_agent/local/checkbbb.py
-    owner: root
-    group: root
-    mode: 0700
-  when: "'bbb' in inventory_hostname"
-
 - name: Copy checkbbb_from_chost.sh to /usr/lib/check_mk_agent/local on target
   copy:
     src: checkbbb_from_chost.sh
@@ -71,7 +62,7 @@
     owner: root
     group: root
     mode: '0644'
-
+  when: "'b3srv' in inventory_hostname"
 
 - name: Copy template to xinetd check_mk config
   template:

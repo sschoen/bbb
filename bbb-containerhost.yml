@@ -41,6 +41,7 @@
         name: monitoring
       tags:
         - on_install
+        - monitoring
     - import_role:
         name: munin-node
       tags:

@@ -116,6 +116,12 @@
     replace: '#\1'
   loop: "{{ bbbcontainer }}"
 
+## Copy scripts for monitoring with checkmk to containers
+- name: Copy monitoring scripts to container
+  import_tasks: monitoring-scripts.yml
+  tags: 
+    - monitoring
+
 - name: Start containers
   systemd:
     name: systemd-nspawn@{{ item }}.service

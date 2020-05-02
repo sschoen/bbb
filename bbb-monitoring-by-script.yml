@@ -1,13 +1,3 @@
-- name: Monitoring of the containers by script from containerhost
-  hosts: bigbluebutton
-  remote_user: root
-  become: no
-  gather_facts: no
-
-  roles:
-    - disable-checkmk
-    - monitoring-scripts 
-
 - name: Monitoring of the containerhosts
   hosts: containerhost
   remote_user: root
