@@ -1,7 +1,12 @@
 #!/usr/bin/python3
 
 #
-# checkbbb.py
+# checkbbb_for_chost.py
+#
+# Gets performance an usage information on a lfb bbb
+# container and provides it to the container host
+# for evaluating with check_mk
+#
 # Frank Schiebel frank@linuxmuster.net
 # GPL v3
 #
@@ -13,13 +18,15 @@ import hashlib
 import requests
 from collections import defaultdict
 from xml.dom.minidom import parse, parseString
-	
-f = open("/var/cache/checkbbb/overview", "w")
-f.write('')
-f.close()
+
+if not os.path.exists("/var/cache/checkbbb"):
+        os.mkdir("/var/cache/checkbbb")
+
+if os.path.exists("/var/cache/checkbbb/overview.part"):
+        os.remove("/var/cache/checkbbb/overview.part")
 
 def print2file(line):
-	f = open("/var/cache/checkbbb/overview", "a")
+	f = open("/var/cache/checkbbb/overview.part", "a")
 	f.write(line + '\n')
 	f.close()
 
@@ -41,8 +48,8 @@ def checkBBBStatus():
 	checkstatus = 0
 	activenum = 0
 	inactivenum = 0
-	statusline = "" 
-		
+	statusline = ""
+
 	for line in output.splitlines():
 		parts = line.split()
 		service = parts[0]
@@ -55,7 +62,7 @@ def checkBBBStatus():
 			statusline += service + ":INACTIVE "
 			inactivenum += 1
 			checkstatus = 2
-	
+
 	checks = activenum + inactivenum
 	checkcount = "[" + str(activenum) + "/" + str(checks) + " active] "
 	print2file(str(checkstatus) + " " + checkname + versiondata + vstatus + checkcount + statusline )
@@ -85,7 +92,7 @@ if services != 0:
     checkstring = '3 ' + checkName + " - Servicecheck unsuccessful: There are inactive BBB Services."
     print2file(checkstring)
     sys.exit(0)
-	
+
 
 (status, xml) = getMeetingData(getApiChecksum())
 
@@ -120,7 +127,7 @@ for m in meetings:
     p = m.getElementsByTagName("bbb-origin-server-name")[0]
     origin = str(p.firstChild.wholeText)
 
-    if ( str(dict(origins[origin])) == "{}" ): 
+    if ( str(dict(origins[origin])) == "{}" ):
         origins[origin]['meetings'] = 0
         origins[origin]['attendees'] = 0
         origins[origin]['video'] = 0
@@ -131,19 +138,19 @@ for m in meetings:
     origins[origin]["meetings"] +=1
 
     p = m.getElementsByTagName("participantCount")[0]
-    numAttendees += int(p.firstChild.wholeText) 
+    numAttendees += int(p.firstChild.wholeText)
     origins[origin]['attendees'] += int(p.firstChild.wholeText)
 
     p = m.getElementsByTagName("listenerCount")[0]
-    numListeners += int(p.firstChild.wholeText) 
+    numListeners += int(p.firstChild.wholeText)
     origins[origin]['listen'] += int(p.firstChild.wholeText)
 
     p = m.getElementsByTagName("voiceParticipantCount")[0]
-    numWithVoice += int(p.firstChild.wholeText) 
+    numWithVoice += int(p.firstChild.wholeText)
     origins[origin]['voice'] += int(p.firstChild.wholeText)
 
     p = m.getElementsByTagName("videoCount")[0]
-    numWithVideo += int(p.firstChild.wholeText) 
+    numWithVideo += int(p.firstChild.wholeText)
     origins[origin]['video'] += int(p.firstChild.wholeText)
 
 
@@ -152,10 +159,10 @@ perfdata = 'numMeetings=' + str(numMeetings) + '|numAttendees=' + str(numAttende
 perfdata += '|numWithVoice=' + str(numWithVoice) + '|numWithVideo=' + str(numWithVideo)
 perfdata += '|numListeners=' + str(numListeners)
 
-checkstring  = "0 " + checkName + " " + perfdata 
-checkstring += " [ServerSum M:" + str(numMeetings) 
-checkstring += " Att:" + str(numAttendees) 
-checkstring += " Vid:" + str(numWithVideo) 
+checkstring  = "0 " + checkName + " " + perfdata
+checkstring += " [ServerSum M:" + str(numMeetings)
+checkstring += " Att:" + str(numAttendees)
+checkstring += " Vid:" + str(numWithVideo)
 checkstring += " Voi:" + str(numWithVoice)
 checkstring += " Lis:" + str(numListeners)
 checkstring += "] "
@@ -173,8 +180,9 @@ for key in origins:
 
 checkstring += originstats
 
-# Writing overview file 
+# Writing overview file
 print2file(checkstring)
+os.rename("/var/cache/checkbbb/overview.part", "/var/cache/checkbbb/overview")
 
 sys.exit(0)
 
