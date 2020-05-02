@@ -21,7 +21,9 @@
 # for upgrading the BBBs, include bbbupgrade.yml
 - name: Import BBB upgrade tasks step one
   import_tasks: bbbupgrade-prepare.yml
-  when: bbb_upgrade is defined and bbb_upgrade | bool
+  tags:
+    - never
+    - upgrade
 
 - name: Fetch and/or clone container image
   script: mkbbbcont {{ container_image }} {{ item }} {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
@@ -88,6 +90,8 @@
     src: turn-stun-servers.xml.j2
     dest: "/var/lib/machines/{{ item }}/usr/share/bbb-web/WEB-INF/classes/spring/turn-stun-servers.xml"
   loop: "{{ bbbcontainer }}"
+  tags:
+    - upgrade
 
 - name: Remove useless BBB index.html page
   command: mv index.html index.html.orig
@@ -95,6 +99,8 @@
     chdir: "/var/lib/machines/{{ item }}/var/www/bigbluebutton-default/"
     removes: "/var/lib/machines/{{ item }}/var/www/bigbluebutton-default/index.html"
   loop: "{{ bbbcontainer }}"
+  tags:
+    - upgrade
 
 - name: Make sure recordings are disabled
   lineinfile:
@@ -102,12 +108,16 @@
     regexp: "^disableRecordingDefault="
     line: "disableRecordingDefault=true"
   loop: "{{ bbbcontainer }}"
+  tags:
+    - upgrade
 
 - name: Disable the disable-transparent-huge-pages.service
   file:
     path: "/var/lib/machines/{{ item }}/etc/systemd/system/multi-user.target.wants/disable-transparent-huge-pages.service"
     state: absent
   loop: "{{ bbbcontainer }}"
+  tags:
+    - upgrade
 
 - name: Disable freeswitch IO scheduling optimization
   replace:
@@ -115,6 +125,8 @@
     regexp: "(^IOScheduling.*)"
     replace: '#\1'
   loop: "{{ bbbcontainer }}"
+  tags:
+    - upgrade
 
 - name: Disable freeswitch CPU scheduling optimization
   replace:
@@ -122,11 +134,13 @@
     regexp: "(^CPUScheduling.*)"
     replace: '#\1'
   loop: "{{ bbbcontainer }}"
+  tags:
+    - upgrade
 
 ## Copy scripts for monitoring with checkmk to containers
 - name: Copy monitoring scripts to container
   import_tasks: monitoring-scripts.yml
-  tags: 
+  tags:
     - monitoring
 
 - name: Start containers
@@ -173,6 +187,7 @@
   changed_when: status.stdout is search("degraded")
   tags:
     - check_containers
+    - upgrade
 
 - name: Show output
   debug:
@@ -181,6 +196,7 @@
   when: status.stdout_lines is defined and status.stdout is search("degraded")
   tags:
     - check_containers
+    - upgrade
 
 - name: Run BBB status check on containers
   command: systemd-run --unit=bbb-conf -M {{ item }} -- /usr/bin/bbb-conf --status
@@ -189,12 +205,14 @@
   loop: "{{ bbbcontainer }}"
   tags:
     - check_containers
+    - upgrade
 
 - name: Wait 5 seconds for status check results
   pause:
     seconds: 5
   tags:
     - check_containers
+    - upgrade
 
 - name: Check BBB status results
   command: journalctl --unit=bbb-conf --lines=14 --all -M {{ item }}
@@ -203,6 +221,7 @@
   loop: "{{ bbbcontainer }}"
   tags:
     - check_containers
+    - upgrade
 
 - name: Show bad BBB status results
   debug:
@@ -214,11 +233,14 @@
     label: "{{ item.item }}"
   tags:
     - check_containers
+    - upgrade
 
 # for upgrading the BBBs, include bbbupgrade-finish.yml
 - name: Import BBB upgrade tasks step two
   import_tasks: bbbupgrade-finish.yml
-  when: bbb_upgrade is defined and bbb_upgrade | bool
+  tags:
+    - never
+    - upgrade
 
 
 ###########################
@@ -239,3 +261,5 @@
       systemctl restart kurento-media-server bbb-webrtc-sfu &&
       date +%Y-%m-%d\ %H:%M:%S > /var/tmp/bbb-kms-last-restart.txt
   loop: "{{ bbbcontainer }}"
+  tags:
+    - upgrade

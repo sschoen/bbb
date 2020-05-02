@@ -15,7 +15,12 @@
         just continue
       private: no
 
-  roles:
-    - up2date-debian
-    - coturn
-    - monitoring
+  tasks:
+    - import_role:
+        name: up2date-debian
+      tags:
+        - upgrade
+    - import_role:
+        name: coturn
+    - import_role:
+        name: monitoring
