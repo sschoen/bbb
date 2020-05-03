@@ -36,9 +36,10 @@
     patterns:
       - "if_err_vb-bbb*"
       - "if_err_virbr0"
-      - "if_err_enp*"
+      - "if_err_vb-turn*"
+      - "if_err_en*"
       - "if_vb-bbb*"
-      - "if_enp*"
+      - "if_en*"
       - "irqstats"
   register: result
   notify: Restart munin-node
