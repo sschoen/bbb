@@ -198,10 +198,11 @@
     - check_containers
     - upgrade
 
+## Check 'bbb-conf --status' inside container
 - name: Run BBB status check on containers
-  command: systemd-run --unit=bbb-conf -M {{ item }} -- /usr/bin/bbb-conf --status
+  command: systemd-run --unit=bbb-status -M {{ item }} -- /usr/bin/bbb-conf --status
   register: status
-  changed_when: "status.stderr is not search('Running as unit: bbb-conf.service')"
+  changed_when: "status.stderr is not search('Running as unit: bbb-status.service')"
   loop: "{{ bbbcontainer }}"
   tags:
     - check_containers
@@ -215,7 +216,7 @@
     - upgrade
 
 - name: Check BBB status results
-  command: journalctl --unit=bbb-conf --lines=14 --all -M {{ item }}
+  command: journalctl --unit=bbb-status --lines=14 --all -M {{ item }}
   register: bbb_status
   changed_when: bbb_status.stdout is search('inactive') or bbb_status.stdout is search('failed')
   loop: "{{ bbbcontainer }}"
@@ -235,7 +236,46 @@
     - check_containers
     - upgrade
 
-# for upgrading the BBBs, include bbbupgrade-finish.yml
+## Chech 'bbb-conf --check' inside container
+- name: Run BBB config check on containers
+  command: systemd-run --unit=bbb-check -M {{ item }} -- /usr/bin/bbb-conf --check
+  register: check
+  changed_when: "check.stderr is not search('Running as unit: bbb-check.service')"
+  loop: "{{ bbbcontainer }}"
+  tags:
+    - check_containers
+    - upgrade
+
+- name: Wait 5 seconds for check results
+  pause:
+    seconds: 5
+  tags:
+    - check_containers
+    - upgrade
+
+- name: Check BBB check results
+  command: journalctl --unit=bbb-check --all -M {{ item }}
+  register: bbb_check
+  changed_when: bbb_check.stdout_lines[-1] is not search('# Potential problems described below')
+  loop: "{{ bbbcontainer }}"
+  tags:
+    - check_containers
+    - upgrade
+
+- name: Show bad BBB status results
+  debug:
+    msg: "{{ item.stdout_lines }}"
+  when: item.stdout_lines[-1] is not search('# Potential problems described below')
+  changed_when: item.stdout_lines[-1] is not search('# Potential problems described below')
+  loop: "{{ bbb_check.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  tags:
+    - check_containers
+    - upgrade
+
+
+## for upgrading the BBBs, include bbbupgrade-finish.yml
 - name: Import BBB upgrade tasks step two
   import_tasks: bbbupgrade-finish.yml
   tags:
