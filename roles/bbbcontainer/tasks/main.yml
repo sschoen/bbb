@@ -138,8 +138,14 @@
     - upgrade
 
 ## Copy scripts for monitoring with checkmk to containers
-- name: Copy monitoring scripts to container
-  import_tasks: monitoring-scripts.yml
+- name: Copy check-script to container BBB
+  copy:
+    src: checkbbb_for_chost.py
+    dest: /var/lib/machines/{{ item  }}/usr/local/bin/checkbbb_for_chost.py
+    owner: root
+    group: root
+    mode: 0755
+  loop: "{{ bbbcontainer }}"
   tags:
     - monitoring
 
