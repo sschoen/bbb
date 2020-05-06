@@ -1,0 +1,4 @@
+# 4b4b2099-0ceb-4c42-a40f-31ff3ec429cd Dialplan: sofia/external/51816@176.9.208.164 Regex (FAIL) [bbb_sp_call] network_addr(185.53.88.167) =~ /176.9.208.164/ break=on-false
+
+[Definition]
+failregex = ^.* Regex \(FAIL\) \[bbb_sp_call\] network_addr\(<HOST>\) .*$

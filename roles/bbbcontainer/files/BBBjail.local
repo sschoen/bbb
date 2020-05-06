@@ -1,0 +1,7 @@
+[BBBfreeswitch]
+enabled  = true
+banaction = ufw
+banaction_allports = ufw
+filter   = BBBfreeswitch
+logpath  = /var/lib/machines/bbb???-???/opt/freeswitch/log/freeswitch.log
+maxretry = 10

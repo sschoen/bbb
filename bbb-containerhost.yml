@@ -11,6 +11,7 @@
       - debootstrap
       - bridge-utils
       - tmux
+      - fail2ban
 
     guest_network: "{{ vault_guest_network }}"
     static_auth_secret: "{{ vault_static_auth_secret }}"
