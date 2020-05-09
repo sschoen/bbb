@@ -7,6 +7,18 @@
   tags:
     - on_install
 
+- name: Provide BBB fail2ban configuration
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: ufw-route.conf, dest: /etc/fail2ban/action.d/ }
+    - { src: BBBfreeswitch.local, dest: /etc/fail2ban/filter.d/ }
+    - { src: BBBjail.local, dest: /etc/fail2ban/jail.d/ }
+  notify: Restart fail2ban
+  tags:
+    - on_install
+
 - name: Generate list of available BBBs
   set_fact:
     bbbcontainer: "{{ bbbcontainer }} + [ '{{ item }}' ]"

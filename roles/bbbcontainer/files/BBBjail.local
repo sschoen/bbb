@@ -1,7 +1,8 @@
 [BBBfreeswitch]
 enabled  = true
-banaction = ufw
-banaction_allports = ufw
+bantime = 240h
+banaction = ufw-route
+banaction_allports = ufw-route
 filter   = BBBfreeswitch
 logpath  = /var/lib/machines/bbb???-???/opt/freeswitch/log/freeswitch.log
 maxretry = 10
