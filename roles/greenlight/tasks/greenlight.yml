@@ -1,0 +1,40 @@
+- name: make sure /srv/docker/greenlight exists
+  file:
+    path: /srv/docker/greenlight
+    state: directory
+
+- name: Get certificate
+  command: /usr/bin/dehydrated -c
+
+- name: Pull greenlight docker image
+  docker_image:
+    name: bigbluebutton/greenlight:v2
+    source: pull
+
+- name: Pull postgres docker image
+  docker_image:
+    name: postgres:9.5
+    source: pull
+
+- name: Generate greenlight secret
+  command: docker run --rm bigbluebutton/greenlight:v2 bundle exec rake secret
+  register: command_output
+
+- set_fact:
+    glsecret: "{{ command_output.stdout }}"
+
+- name: Copy docker-compose.yml to target
+  template:
+    src: docker-compose.yml.j2
+    dest: /srv/docker/greenlight/docker-compose.yml
+
+- name: Copy .env to target
+  template:
+    src: greenlight.env.j2
+    dest: /srv/docker/greenlight/.env
+
+- name: Copy nginx config to target
+  template:
+    src: greenlight.nginx.j2
+    dest: /etc/nginx/sites-enabled/greenlight
+  notify: Restart nginx

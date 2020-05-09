@@ -1,0 +1,24 @@
+debian_flavor: debian
+compose_version: 1.25.5
+required_packages:
+  - ufw
+  - curl
+  - apt-transport-https
+  - ca-certificates
+  - gnupg2
+  - software-properties-common
+  - fail2ban
+  - vim
+  - python-docker
+  - python-dockerpty
+  - nginx
+  - dehydrated
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+common_optional_packages:
+  - vim
+ssh_port: '22'
+http_port: '80'
+https_port: '443'

@@ -1,0 +1,13 @@
+- name: Install a standalone greenlight with docker 
+  hosts: all
+  remote_user: root
+  become: no
+  vars_files: vault
+  vars: 
+    greenlight_postgres_password: "{{ vault_greenlight_postgres_password }}"
+    greenlight_bbb_url: "{{ vault_greenlight_bbb_url }}"
+    greenlight_bbb_secret: "{{ vault_greenlight_bbb_secret }}"
+
+  roles:
+    - up2date-debian 
+    - greenlight

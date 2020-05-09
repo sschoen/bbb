@@ -1,0 +1,5 @@
+- name: Prepare dockerhost with dehydrated
+  import_tasks: dockerhost.yml
+
+- name: Install greenlight
+  import_tasks: greenlight.yml

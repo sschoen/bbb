@@ -1,0 +1,5 @@
+#!/bin/sh
+
+if [ -x /usr/bin/dehydrated ]; then 
+    /usr/bin/dehydrated -c -g > /var/log/dehydrated.log 2>&1
+fi
