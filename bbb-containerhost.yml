@@ -7,6 +7,7 @@
   vars:
     extra_pkgs:
       - ufw
+      - bc
       - systemd-container
       - debootstrap
       - bridge-utils
