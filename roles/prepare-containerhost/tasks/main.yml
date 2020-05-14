@@ -27,15 +27,6 @@
     line: DEFAULT_FORWARD_POLICY="ACCEPT"
   notify: Restart ufw
 
-- name: Configure ufw rules
-  ufw:
-    rule: allow
-    interface: "{{ ansible_default_ipv4.interface }}"
-    direction: in
-    src: any
-    dest: "{{ guest_network }}"
-  notify: Restart ufw
-
 - name: Encrease fs.inotify.max_user_instances
   sysctl:
     name: fs.inotify.max_user_instances
