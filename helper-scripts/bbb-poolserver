@@ -1,0 +1,28 @@
+#!/bin/bash
+
+action=$1
+pattern=$2
+declare -a serverlist
+
+set -eu
+if [ $action != "enable"  -a "$action" != "disable" ]; then 
+	echo "Error."
+	echo "Usage: $0 action pattern"
+	echo "Action has to be in [enable|disable]"
+	exit 1
+fi
+
+ids_servers=$(/usr/bin/docker exec  scalelite-api ./bin/rake servers | grep -B 1 $pattern | tr -d "\n" | sed -e "s|/bigbluebutton/api|\n|g" | sed "s|url: https://||g" | sed "s|id: ||g" | sed "s|--||g"| sed "s|\s|#|g")
+
+# keine id keine show
+if [ -z "$ids_servers" ]; then 
+	echo "No IDs for $pattern found."
+	exit 0
+fi
+
+for line in $ids_servers; do
+	id=$(echo $line | awk -F"#" '{print $1}')
+	server=$(echo $line | awk -F"#" '{print $2}')
+	echo "[$action] $server ($id)"
+	/usr/bin/docker exec scalelite-api ./bin/rake servers:$action[$id]
+done
