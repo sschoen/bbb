@@ -12,7 +12,10 @@ if [ $action != "enable"  -a "$action" != "disable" ]; then
 	exit 1
 fi
 
-ids_servers=$(/usr/bin/docker exec  scalelite-api ./bin/rake servers | grep -B 1 $pattern | tr -d "\n" | sed -e "s|/bigbluebutton/api|\n|g" | sed "s|url: https://||g" | sed "s|id: ||g" | sed "s|--||g"| sed "s|\s|#|g")
+ids_servers=$(/usr/bin/docker exec  scalelite-api ./bin/rake servers | grep -A2 -B1 $pattern \
+                  | sed -e "/secret:.*/d"  | tr -d "\n" | sed -e "s|abled|abled\n|g" \
+                  | sed -e "s|/bigbluebutton/api||g" | sed "s|url: https://||g" \
+                  | sed "s|id: ||g" | sed "s|--||g"| sed "s|\s|#|g")
 
 # keine id keine show
 if [ -z "$ids_servers" ]; then 
@@ -23,6 +26,11 @@ fi
 for line in $ids_servers; do
 	id=$(echo $line | awk -F"#" '{print $1}')
 	server=$(echo $line | awk -F"#" '{print $2}')
-	echo "[$action] $server ($id)"
-	/usr/bin/docker exec scalelite-api ./bin/rake servers:$action[$id]
+        s=$(echo $line | awk -F"#" '{print $3}')
+        if [ "${action}d" = "$s" ] ; then
+            echo "$server ($id) already ${action}d."
+        else
+	    echo "[$action] $server ($id)"
+	    /usr/bin/docker exec scalelite-api ./bin/rake servers:$action[$id]
+        fi
 done
