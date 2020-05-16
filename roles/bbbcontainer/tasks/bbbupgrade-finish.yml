@@ -1,4 +1,0 @@
-- name: Enable BBBs on scalelite
-  command: "/usr/local/sbin/bbb-poolserver enable {{ item }}"
-  delegate_to: "scale001.{{ ansible_domain }}"
-  loop: "{{ bbbcontainer }}"

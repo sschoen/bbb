@@ -39,7 +39,7 @@ muss man auskommentieren.
 
 ## Konfigurationsvariablen
 
-Der Host- und Domainname muss nicht mehr als Variable gesetzt werden, sondern wird aus dem Inventory-Hostnamen abgeleitet. 
+Der Host- und Domainname muss nicht mehr als Variable gesetzt werden, sondern wird aus dem Inventory-Hostnamen abgeleitet.
 
 ``ansible-playbook -i "bbb.q-gym.de," bbb-install.yml``
 
@@ -82,10 +82,10 @@ conference tools for all schools in Baden-Württemberg, south-west
 Germany.  They are work in progress, but work fine as far as we can
 tell today, and are used to prepare a total of several hundred
 BigBlueButton Servers (BBBs) on dozens of powerful (32 core, 64
-threads) machines. 
+threads) machines.
 
 ## Setup
-Our setup is as follows:  
+Our setup is as follows:
 
 ### Ubuntu 16.04 Container
 To facilitate the most efficient use of the hardware at hand and the
@@ -116,7 +116,7 @@ bbb000-$(date +%Y%m%d).tar.xz`` and needs to be provided on roll-out:
 In addition to the BBB containers, every host provides a containerized
 STUN/TURN server (``coturn``) which is used by all BBBs of the
 associated host.  The setup is straight forward, based on a
-``debootstrap``ed Debian Buster. 
+``debootstrap``ed Debian Buster.
 
 ### Network
 We use a single NIC of the host with several IP-addresses:  The
@@ -130,10 +130,10 @@ hosts file, we provide for example:
 
 With this set, the playbook assigns the first usable subnet address
 (``172.93.28.161``) to the bridge ``virbr0``, the second
-(``172.93.28.162``) to the turn server (a minimal Debian 
+(``172.93.28.162``) to the turn server (a minimal Debian
 Buster with ``coturn``, see above) and then all further addresses to
 BBBs, as long as they are resolvable by the DNS
-(cf. ``bbbcontainerhosts.yml``). 
+(cf. ``bbbcontainerhosts.yml``).
 
 ## Roll-Out
 On roll-out, we need the server with minimal Debian Buster installed
@@ -141,15 +141,19 @@ and ssh pubkey authentification.  In addition, subnet information
 (``vault_guest_network=…``) needs to be provided.  Further more, all
 DNS entries need to be ready for the BBBs.  After that, the host
 carrying the STUN/TURN server and a bunch of BBBs is ready after
-running: 
+running:
 
 ``ansible-playbook -u root -i hosts --vault-password-file vault.pwd --limit HOSTS2INSTALL rollout-master.yml``
 
-### Check and Upgrade BBB
-To run only the set of checks on the BBB containers, use the master
-playbook with the ``--tags=check_containers`` option.  
+### Disable, Enable, Check and Upgrade BBBs
+To remove all BBBs of a host from the load balancer pool, use the
+master playbook with the ``--tags=bbb_disable`` option.  Add them back
+to the pool with ``--tags=bbb_enable``.
 
-To upgrade the BBBs, use  ``--tags=upgrade``. 
+To run only the set of checks on the BBB containers, use the
+``--tags=bbb_check`` option.
+
+To upgrade the BBBs, use  ``--tags=bbb_upgrade``.
 
 ## Miscellaneous
 We use several monitoring systems to optimize and further develop the

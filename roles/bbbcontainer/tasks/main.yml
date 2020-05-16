@@ -30,12 +30,21 @@
   tags:
     - always
 
+- name: Disable BBBs on scalelite
+  command: "/usr/local/sbin/bbb-poolserver disable {{ item }}"
+  delegate_to: "scale001.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
+  tags:
+    - never
+    - bbb_upgrade
+    - bbb_disable
+
 # for upgrading the BBBs, include bbbupgrade.yml
 - name: Import BBB upgrade tasks step one
   import_tasks: bbbupgrade-prepare.yml
   tags:
     - never
-    - upgrade
+    - bbb_upgrade
 
 - name: Fetch and/or clone container image
   script: mkbbbcont {{ container_image }} {{ item }} {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
@@ -103,7 +112,7 @@
     dest: "/var/lib/machines/{{ item }}/usr/share/bbb-web/WEB-INF/classes/spring/turn-stun-servers.xml"
   loop: "{{ bbbcontainer }}"
   tags:
-    - upgrade
+    - bbb_upgrade
 
 - name: Remove useless BBB index.html page
   command: mv index.html index.html.orig
@@ -112,7 +121,7 @@
     removes: "/var/lib/machines/{{ item }}/var/www/bigbluebutton-default/index.html"
   loop: "{{ bbbcontainer }}"
   tags:
-    - upgrade
+    - bbb_upgrade
 
 - name: Make sure recordings are disabled
   lineinfile:
@@ -121,7 +130,7 @@
     line: "disableRecordingDefault=true"
   loop: "{{ bbbcontainer }}"
   tags:
-    - upgrade
+    - bbb_upgrade
 
 - name: Disable the disable-transparent-huge-pages.service
   file:
@@ -129,7 +138,7 @@
     state: absent
   loop: "{{ bbbcontainer }}"
   tags:
-    - upgrade
+    - bbb_upgrade
 
 - name: Disable freeswitch IO scheduling optimization
   replace:
@@ -138,7 +147,7 @@
     replace: '#\1'
   loop: "{{ bbbcontainer }}"
   tags:
-    - upgrade
+    - bbb_upgrade
 
 - name: Disable freeswitch CPU scheduling optimization
   replace:
@@ -147,7 +156,7 @@
     replace: '#\1'
   loop: "{{ bbbcontainer }}"
   tags:
-    - upgrade
+    - bbb_upgrade
 
 ## Copy scripts for monitoring with checkmk to containers
 - name: Copy check-script to container BBB
@@ -204,8 +213,8 @@
   register: status
   changed_when: status.stdout is search("degraded")
   tags:
-    - check_containers
-    - upgrade
+    - bbb_check
+    - bbb_upgrade
 
 - name: Show output
   debug:
@@ -213,8 +222,8 @@
   changed_when: status.stdout is search("degraded")
   when: status.stdout_lines is defined and status.stdout is search("degraded")
   tags:
-    - check_containers
-    - upgrade
+    - bbb_check
+    - bbb_upgrade
 
 ## Check 'bbb-conf --status' inside container
 - name: Run BBB status check on containers
@@ -223,15 +232,15 @@
   changed_when: "status.stderr is not search('Running as unit: bbb-status.service')"
   loop: "{{ bbbcontainer }}"
   tags:
-    - check_containers
-    - upgrade
+    - bbb_check
+    - bbb_upgrade
 
 - name: Wait 5 seconds for status check results
   pause:
     seconds: 5
   tags:
-    - check_containers
-    - upgrade
+    - bbb_check
+    - bbb_upgrade
 
 - name: Check BBB status results
   command: journalctl --unit=bbb-status --lines=14 --all -M {{ item }}
@@ -239,8 +248,8 @@
   changed_when: bbb_status.stdout is search('inactive') or bbb_status.stdout is search('failed')
   loop: "{{ bbbcontainer }}"
   tags:
-    - check_containers
-    - upgrade
+    - bbb_check
+    - bbb_upgrade
 
 - name: Show bad BBB status results
   debug:
@@ -251,8 +260,8 @@
   loop_control:
     label: "{{ item.item }}"
   tags:
-    - check_containers
-    - upgrade
+    - bbb_check
+    - bbb_upgrade
 
 ## Chech 'bbb-conf --check' inside container
 - name: Run BBB config check on containers
@@ -261,15 +270,15 @@
   changed_when: "check.stderr is not search('Running as unit: bbb-check.service')"
   loop: "{{ bbbcontainer }}"
   tags:
-    - check_containers
-    - upgrade
+    - bbb_check
+    - bbb_upgrade
 
 - name: Wait 5 seconds for check results
   pause:
     seconds: 5
   tags:
-    - check_containers
-    - upgrade
+    - bbb_check
+    - bbb_upgrade
 
 - name: Check BBB check results
   command: journalctl --unit=bbb-check --all -M {{ item }}
@@ -277,8 +286,8 @@
   changed_when: bbb_check.stdout_lines[-1] is not search('# Potential problems described below')
   loop: "{{ bbbcontainer }}"
   tags:
-    - check_containers
-    - upgrade
+    - bbb_check
+    - bbb_upgrade
 
 - name: Show bad BBB status results
   debug:
@@ -289,16 +298,17 @@
   loop_control:
     label: "{{ item.item }}"
   tags:
-    - check_containers
-    - upgrade
+    - bbb_check
+    - bbb_upgrade
 
-
-## for upgrading the BBBs, include bbbupgrade-finish.yml
-- name: Import BBB upgrade tasks step two
-  import_tasks: bbbupgrade-finish.yml
+- name: Enable BBBs on scalelite
+  command: "/usr/local/sbin/bbb-poolserver enable {{ item }}"
+  delegate_to: "scale001.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
   tags:
     - never
-    - upgrade
+    - bbb_upgrade
+    - bbb_enable
 
 
 ###########################
@@ -320,4 +330,4 @@
       date +%Y-%m-%d\ %H:%M:%S > /var/tmp/bbb-kms-last-restart.txt
   loop: "{{ bbbcontainer }}"
   tags:
-    - upgrade
+    - bbb_upgrade
