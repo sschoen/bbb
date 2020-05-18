@@ -27,6 +27,8 @@
   tasks:
     - import_role:
         name: up2date-debian
+      tags:
+        - always
     - import_role:
         name: security
       tags:
