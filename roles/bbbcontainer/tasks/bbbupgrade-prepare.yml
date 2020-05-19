@@ -15,7 +15,7 @@
   pause:
     minutes: 1
 
-- name: Stop containers from containerhost
+- name: Stop BBB containers from containerhost
   systemd:
     name: systemd-nspawn@{{ item }}.service
     state: stopped

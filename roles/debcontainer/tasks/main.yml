@@ -7,6 +7,31 @@
   tags:
     - always
 
+
+- name: Update apt package cache on container and run full-upgrade
+  apt:
+    update-cache: yes
+    upgrade: full
+    autoremove: yes
+    autoclean: yes
+  delegate_to: "{{ item }}.{{ ansible_domain }}"
+  loop: "{{ container }}"
+  tags:
+    - never
+    - debcont_upgrade
+    - bbb_upgrade
+
+- name: Stop debian containers from containerhost
+  systemd:
+    name: systemd-nspawn@{{ item }}.service
+    state: stopped
+  loop: "{{ container }}"
+  tags:
+    - never
+    - debcont_upgrade
+    - bbb_upgrade
+
+
 - name: debootstrap minimal system
   command:
     cmd: >

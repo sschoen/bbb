@@ -153,7 +153,8 @@ to the pool with ``--tags=bbb_enable``.
 To run only the set of checks on the BBB containers, use the
 ``--tags=bbb_check`` option.
 
-To upgrade the BBBs, use ``--tags=bbb_upgrade``.
+To upgrade the BBBs and the TURN server, use ``--tags=bbb_upgrade``.
+Use ``--tags=debcont_upgrade`` to only upgrade and restart the TURN server.
 
 ## Miscellaneous
 We use several monitoring systems to optimize and further develop the
