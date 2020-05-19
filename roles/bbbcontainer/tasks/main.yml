@@ -184,12 +184,14 @@
     name: systemd-nspawn@{{ item }}.service
     state: started
   loop: "{{ bbbcontainer }}"
+  register: startcont
   tags:
     - always
 
 - name: Wait a minute for containers to settle
   pause:
     minutes: 1
+  when: startcont.changed
   tags:
     - always
 
