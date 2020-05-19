@@ -42,7 +42,9 @@
 - name: Disable BBBs on scalelite
   command: "/usr/local/sbin/bbb-poolserver disable {{ item }}"
   delegate_to: "scale001.{{ ansible_domain }}"
+  register: bbb_pool
   loop: "{{ bbbcontainer }}"
+  changed_when: bbb_pool.stdout is not search("already")
   tags:
     - never
     - bbb_upgrade

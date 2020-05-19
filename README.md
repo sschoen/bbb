@@ -126,6 +126,7 @@ provided at install time for every machine.  In the ansible inventory
 hosts file, we provide for example:
 
 ``[containerhost]``
+
 ``HOST.DOMAIN.TLD  vault_guest_network="172.93.28.160/28"``.
 
 With this set, the playbook assigns the first usable subnet address
