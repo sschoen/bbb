@@ -202,6 +202,7 @@
   command:
     cmd: systemd-run --unit=bbb-conf-clean -M {{ item }} -- /usr/bin/bbb-conf --clean
     creates: "/var/lib/machines/{{ item }}/etc/ssh/ssh_host_*"
+  register: bbb_reset
   loop: "{{ bbbcontainer }}"
   tags:
     - on_install
@@ -209,6 +210,7 @@
 - name: Wait a minute for containers to settle
   pause:
     minutes: 1
+  when: bbb_reset.changed
   tags:
     - on_install
 
