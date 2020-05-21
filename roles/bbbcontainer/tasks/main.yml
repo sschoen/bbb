@@ -296,7 +296,7 @@
     - bbb_upgrade
 
 - name: Check BBB check results
-  command: journalctl --unit=bbb-check --all -M {{ item }}
+  command: journalctl --unit=bbb-check -b --all -M {{ item }}
   register: bbb_check
   changed_when: bbb_check.stdout_lines[-1] is not search('# Potential problems described below')
   loop: "{{ bbbcontainer }}"
