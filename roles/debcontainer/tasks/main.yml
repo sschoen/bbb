@@ -29,7 +29,6 @@
   tags:
     - never
     - debcont_upgrade
-    - bbb_upgrade
 
 
 - name: debootstrap minimal system
