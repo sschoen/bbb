@@ -222,6 +222,7 @@
   tags:
     - on_install
 
+
 ## Check container and BBB services
 - name: Container status check
   command: systemctl list-machines
@@ -234,11 +235,13 @@
 - name: Show output
   debug:
     msg: "{{ status.stdout_lines }}"
+  register: machineres
   changed_when: status.stdout is search("degraded")
   when: status.stdout_lines is defined and status.stdout is search("degraded")
   tags:
     - bbb_check
     - bbb_upgrade
+
 
 ## Check 'bbb-conf --status' inside container
 - name: Run BBB status check on containers
@@ -259,8 +262,8 @@
 
 - name: Check BBB status results
   command: journalctl --unit=bbb-status --lines=14 --all -M {{ item }}
-  register: bbb_status
-  changed_when: bbb_status.stdout is search('inactive') or bbb_status.stdout is search('failed')
+  register: bbbstatus
+  changed_when: bbbstatus.stdout is search('inactive') or bbbstatus.stdout is search('failed')
   loop: "{{ bbbcontainer }}"
   tags:
     - bbb_check
@@ -270,19 +273,21 @@
   debug:
     msg: "{{ item.stdout_lines }}"
   when: item.stdout is search('inactive') or item.stdout is search('failed')
+  register: statusres
   changed_when: item.stdout is search('inactive') or item.stdout is search('failed')
-  loop: "{{ bbb_status.results }}"
+  loop: "{{ bbbstatus.results }}"
   loop_control:
     label: "{{ item.item }}"
   tags:
     - bbb_check
     - bbb_upgrade
 
-## Chech 'bbb-conf --check' inside container
+
+## Check 'bbb-conf --check' inside container
 - name: Run BBB config check on containers
   command: systemd-run --unit=bbb-check -M {{ item }} -- /usr/bin/bbb-conf --check
-  register: check
-  changed_when: "check.stderr is not search('Running as unit: bbb-check.service')"
+  register: status
+  changed_when: "status.stderr is not search('Running as unit: bbb-check.service')"
   loop: "{{ bbbcontainer }}"
   tags:
     - bbb_check
@@ -297,8 +302,8 @@
 
 - name: Check BBB check results
   command: journalctl --unit=bbb-check -b --all -M {{ item }}
-  register: bbb_check
-  changed_when: bbb_check.stdout_lines[-1] is not search('# Potential problems described below')
+  register: bbbcheck
+  changed_when: bbbcheck.stdout_lines[-1] is not search('# Potential problems described below')
   loop: "{{ bbbcontainer }}"
   tags:
     - bbb_check
@@ -308,17 +313,23 @@
   debug:
     msg: "{{ item.stdout_lines }}"
   when: item.stdout_lines[-1] is not search('# Potential problems described below')
+  register: checkres
   changed_when: item.stdout_lines[-1] is not search('# Potential problems described below')
-  loop: "{{ bbb_check.results }}"
+  loop: "{{ bbbcheck.results }}"
   loop_control:
     label: "{{ item.item }}"
   tags:
     - bbb_check
     - bbb_upgrade
 
+
 - name: Enable BBBs on scalelite
   command: "/usr/local/sbin/bbb-poolserver enable {{ item }}"
   delegate_to: "scale001.{{ ansible_domain }}"
+  when: >-
+    not machineres.changed | default(false) and
+    not statusres.changed  | default(false) and
+    not checkres.changed | default(false)
   loop: "{{ bbbcontainer }}"
   tags:
     - never
