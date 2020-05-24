@@ -6,7 +6,7 @@ CRITICAL=102
 STATUS=3
 
 
-kurentos=$(top -b -n 1 | grep kurento-m | sort | awk '{print $1":"$9}')
+kurentos=$(top -b -n 1 | grep kurento- | sort | awk '{print $1":"$9}')
 maxpercentage=0
 
 for l in $kurentos; do
