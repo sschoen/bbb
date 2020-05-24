@@ -55,6 +55,15 @@
     mode: 0700
   when: "'b3srv' in inventory_hostname"
 
+- name: Copy check_coturn.sh to /usr/lib/check_mk_agent/local on target
+  copy:
+    src: check_coturn.sh
+    dest: /usr/lib/check_mk_agent/local/check_coturn.sh
+    owner: root
+    group: root
+    mode: 0700
+  when: "'turn' in inventory_hostname"
+
 - name: Copy template to xinetd check_mk config
   template:
     src: xinetd_check_mk.j2
