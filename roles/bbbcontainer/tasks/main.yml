@@ -27,15 +27,6 @@
   tags:
     - on_install
 
-- name: Reject access to freeswitch port
-  ufw:
-    rule: reject
-    route: yes
-    port: "5060"
-  tags:
-    - on_install
-
-
 - name: Generate list of available BBBs
   set_fact:
     bbbcontainer: "{{ bbbcontainer }} + [ '{{ item }}' ]"

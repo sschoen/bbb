@@ -1,7 +1,6 @@
 - name: install packages
   apt:
     name:
-      - ufw
       - certbot
       - coturn
       - acl
@@ -39,26 +38,6 @@
     etype: user
     permissions: r
     state: present
-
-
-- name: adapt coturn ports in ufw
-  replace:
-    path: /etc/ufw/applications.d/turnserver
-    regexp: '^ports=.*$'
-    replace: 'ports=443,444,3478,3479,5349,5350,49152:65535/tcp|443,444,3478,3479,5349,5350,49152:65535/udp'
-
-- name: allow ssh in ufw
-  ufw:
-    rule: limit
-    name: OpenSSH
-    state: enabled
-
-- name: allow turnserver in ufw
-  ufw:
-    rule: allow
-    name: turnserver
-    state: enabled
-
 
 - name: allow coturn to open lower ports
   capabilities:
