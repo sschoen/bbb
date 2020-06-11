@@ -7,6 +7,14 @@
   tags:
     - on_install
 
+- name: Optimize ondemand governor
+  copy:
+    src: ondemand.conf
+    dest: /etc/tmpfiles.d/ondemand.conf
+  when: not 'b3srv002' in inventory_hostname
+  tags:
+    - on_install
+
 - name: Provide BBB fail2ban configuration
   copy:
     src: "{{ item.src }}"
@@ -185,8 +193,8 @@
   systemd:
     name: systemd-nspawn@{{ item }}.service
     state: started
-  loop: "{{ bbbcontainer }}"
   register: startcont
+  loop: "{{ bbbcontainer }}"
   tags:
     - always
 
@@ -197,7 +205,7 @@
   tags:
     - always
 
-- name: Reset BBB
+- name: Reset BBBs
   command:
     cmd: systemd-run --unit=bbb-conf-clean -M {{ item }} -- /usr/bin/bbb-conf --clean
   register: bbb_reset
