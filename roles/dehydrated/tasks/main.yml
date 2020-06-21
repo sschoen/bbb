@@ -1,0 +1,108 @@
+- name: Copy dehydrated to server
+  copy: 
+    src: dehydrated
+    dest: /usr/local/sbin/dehydrated
+    owner: root
+    group: root
+    mode: 755
+
+- name: Make sure config directory exists
+  file:
+    path: /etc/dehydrated
+    state: directory
+    mode: '0755'
+
+- name: Make sure main config directory exists
+  file:
+    path: /var/lib/dehydrated
+    state: directory
+    mode: '0755'
+
+- name: Make sure acme-challenges dir exists
+  file:
+    path: /var/lib/dehydrated/acme-challenges
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: Make sure conf.d directory exists
+  file:
+    path: /etc/dehydrated/conf.d
+    state: directory
+    mode: '0755'
+
+- name: Copy config to server
+  copy: 
+    src: config
+    dest: /etc/dehydrated/config
+    owner: root
+    group: root
+    mode: 640
+
+- name: Copy hook.sh to server
+  copy: 
+    src: hook.sh
+    dest: /etc/dehydrated/hook.sh
+    owner: root
+    group: root
+    mode: 755
+
+- name: Register LE account for the server
+  command: /usr/local/sbin/dehydrated --register --accept-terms
+  register: regaccount
+
+- debug: msg={{ regaccount.stdout }}
+
+- name: Copy dehydrated.nginx to /etc/bigbluebutton/nginx
+  copy: 
+    src: dehydrated.nginx
+    dest: /etc/bigbluebutton/nginx/dehydrated.nginx
+    owner: root
+    group: root
+    mode: 644
+  notify: Restart nginx
+
+- name: Copy domain template to server
+  template: 
+    src: domains.txt
+    dest: /etc/dehydrated/domains.txt
+    owner: root
+    group: root
+    mode: 644 
+
+- name: Force Restart nginx
+  service: name=nginx state=restarted
+
+
+- name: Get certificate
+  command: /usr/local/sbin/dehydrated -c
+  register: certget
+
+- debug: msg={{ certget.stdout }}
+
+- name: Change certificate in nginx config
+  lineinfile: 
+    path: /etc/nginx/sites-enabled/bigbluebutton
+    regexp: 'ssl_certificate '
+    line: ssl_certificate /var/lib/dehydrated/certs/{{ inventory_hostname }}/fullchain.pem;
+  notify: Restart nginx
+
+- name: Change certificate key in nginx config
+  lineinfile: 
+    path: /etc/nginx/sites-enabled/bigbluebutton
+    regexp: 'ssl_certificate_key '
+    line: ssl_certificate_key /var/lib/dehydrated/certs/{{ inventory_hostname }}/privkey.pem;
+  notify: Restart nginx
+
+- name: Create cronjob
+  cron:
+    name: "renew certificate"
+    cron_file: dehydrated
+    user: root
+    minute: "{{ 59 |random(seed=inventory_hostname) }}"
+    hour: "{{ 23 |random(seed=inventory_hostname) }}"
+    job: "/usr/local/sbin/dehydrated -c -g > /dev/null 2>&1"
+
+
+

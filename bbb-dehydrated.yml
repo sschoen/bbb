@@ -1,0 +1,7 @@
+- name: Switch Cert to dehydrated
+  hosts: all
+  remote_user: root
+  become: no
+
+  roles:
+    - dehydrated
