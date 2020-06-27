@@ -39,19 +39,13 @@
     route: yes
   notify: Restart ufw
 
-- name: Allow OpenSSH
-  ufw:
-    name: OpenSSH
-    rule: limit
-    route: yes
-  notify: Restart ufw
-
 - name: Allow services
   ufw:
     name: "{{ item }}"
     rule: allow
     route: yes
   loop:
+    - OpenSSH
     - WWW Full
     - turnserver
   notify: Restart ufw
