@@ -33,7 +33,7 @@
   when: lookup('dig', item ~ '.' ~ ansible_domain) | ipaddr(guest_network)
   with_sequence: >
     start=1
-    end={{ guest_network | ipaddr('size') | int - 2 - debcontainer | length }}
+    end={{ [max_num_bbbs|default(255)|int, guest_network|ipaddr('size')|int - 2 - debcontainer|length] | min }}
     format=bbb{{ ansible_hostname | replace('b3srv', '')}}-%03d
   tags:
     - always
@@ -207,7 +207,7 @@
 
 - name: Wait a minute for containers to settle
   pause:
-    minutes: 1
+    minutes: 2
   when: bbb_reset is defined and bbb_reset.changed
   tags:
     - on_install
@@ -332,7 +332,6 @@
   loop: "{{ bbbcontainer }}"
   tags:
     - never
-    - bbb_upgrade
     - bbb_enable
 
 

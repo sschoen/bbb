@@ -136,6 +136,11 @@ Buster with ``coturn``, see above) and then all further addresses to
 BBBs, as long as they are resolvable by the DNS
 (cf. ``bbbcontainerhosts.yml``).
 
+It is possible to limit the list of BBBs by defining ``max_num_bbbs``
+as the maximum number of BBBs (if available in the DNS).
+For example, use ``--extra-vars="max_num_bbbs=5"`` to limit the list
+to the first 5 BBBs.
+
 ## Roll-Out
 On roll-out, we need the server with minimal Debian Buster installed
 and ssh pubkey authentification.  In addition, subnet information
