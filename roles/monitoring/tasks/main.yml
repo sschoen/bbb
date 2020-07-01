@@ -16,10 +16,10 @@
 - name: Install check-mk-agent
   apt: deb="/tmp/check-mk-agent_1.6.0p11-1_all.deb"
 
-- name: check if ufw rules dir exists
+- name: check if ufw is installed
   stat:
-    path: /etc/ufw/applications.d
-  register: ufw_dir
+    path: /usr/sbin/ufw
+  register: ufw
 
 - name: Copy ufw rules to target
   copy:
@@ -28,14 +28,14 @@
     owner: root
     group: root
     mode: 0644
-  when: ufw_dir.stat.exists == true
+  when: ufw.stat.exists
 
 - name: allow check_mk in ufw
   ufw:
     rule: allow
     name: checkmk
     state: enabled
-  when: ufw_dir.stat.exists == true
+  when: ufw.stat.exists
 
 - name: Copy checkbbb_from_chost.sh to /usr/lib/check_mk_agent/local on target
   copy:
