@@ -30,21 +30,34 @@
   with_items:
     - /etc/letsencrypt/live/
     - /etc/letsencrypt/archive/
+  notify: "restart coturn"
+
+- name: find all private keys
+  find:
+    paths: /etc/letsencrypt/archive/{{ inventory_hostname }}/
+    patterns: privkey*.pem
+  register: privkeys 
 
 - name: allow turnserver access to LE privat key
   acl:
-    path: /etc/letsencrypt/archive/{{ inventory_hostname }}/privkey1.pem
+    path: "{{ item.path }}"
     entity: turnserver
     etype: user
     permissions: r
     state: present
+  loop: "{{ privkeys.files }}"
+  notify: "restart coturn"
 
-- name: allow coturn to open lower ports
-  capabilities:
-    path: /usr/bin/turnserver
-    capability: cap_net_bind_service+eip
-    state: present
+- name: prepare for coturn service configuration
+  file:
+    path: /etc/systemd/system/coturn.service.d/
+    state: directory
 
+- name: allow coturn to access lower ports
+  copy:
+    src: coturn-override.conf
+    dest: /etc/systemd/system/coturn.service.d/override.conf
+  notify: "restart coturn"
 
 - name: adapt turnserver.conf
   blockinfile:
