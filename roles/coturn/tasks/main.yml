@@ -20,32 +20,44 @@
     creates: /etc/letsencrypt/live/
   when: letsencryptemail is defined and letsencryptemail | length > 0
 
-- name: allow turnserver access to LE directories
+- name: Set ACL for LE recursively to r
   acl:
     path: "{{ item }}"
     entity: turnserver
     etype: user
-    permissions: x
+    permissions: r
+    recursive: yes
     state: present
   with_items:
     - /etc/letsencrypt/live/
     - /etc/letsencrypt/archive/
   notify: "restart coturn"
 
-- name: find all private keys
-  find:
-    paths: /etc/letsencrypt/archive/{{ inventory_hostname }}/
-    patterns: privkey*.pem
-  register: privkeys 
-
-- name: allow turnserver access to LE privat key
+- name: Set default ACL for LE recursively to r
   acl:
-    path: "{{ item.path }}"
+    path: "{{ item }}"
     entity: turnserver
     etype: user
-    permissions: r
+    permissions: rx
+    default: yes
+    recursive: yes
     state: present
-  loop: "{{ privkeys.files }}"
+  with_items:
+    - /etc/letsencrypt/live/
+    - /etc/letsencrypt/archive/
+  notify: "restart coturn"
+
+- name: Set ACL for LE directorys to rx
+  acl:
+    path: "{{ item }}"
+    entity: turnserver
+    etype: user
+    permissions: rx
+    recursive: yes
+    state: present
+  with_items:
+    - /etc/letsencrypt/live/
+    - /etc/letsencrypt/archive/
   notify: "restart coturn"
 
 - name: prepare for coturn service configuration
