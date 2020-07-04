@@ -60,16 +60,25 @@
     - /etc/letsencrypt/archive/
   notify: "restart coturn"
 
-- name: prepare for coturn service configuration
+- name: prepare for service overrides
   file:
-    path: /etc/systemd/system/coturn.service.d/
+    path: "/etc/systemd/system/{{ item }}"
     state: directory
+  loop:
+    - coturn.service.d
+    - certbot.timer.d
 
 - name: allow coturn to access lower ports
   copy:
     src: coturn-override.conf
     dest: /etc/systemd/system/coturn.service.d/override.conf
   notify: "restart coturn"
+
+- name: run certbot timer only during the night
+  copy:
+    src: certbot-override.conf
+    dest: /etc/systemd/system/certbot.timer.d/override.conf
+  notify: "reload systemd"
 
 - name: adapt turnserver.conf
   blockinfile:
