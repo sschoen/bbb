@@ -20,47 +20,44 @@
     creates: /etc/letsencrypt/live/
   when: letsencryptemail is defined and letsencryptemail | length > 0
 
-- name: Set ACL for LE recursively to r
+- name: allow turnserver access to LE directories
   acl:
     path: "{{ item }}"
+    entity: turnserver
+    etype: user
+    permissions: x
+    state: present
+  with_items:
+    - /etc/letsencrypt/live/
+    - /etc/letsencrypt/archive/
+  notify: "restart coturn"
+
+- name: find all private keys
+  find:
+    paths: "/etc/letsencrypt/archive/{{ inventory_hostname }}"
+    patterns: privkey*.pem
+  register: privkeys
+
+- name: allow turnserver access to LE private key
+  acl:
+    path: "{{ item.path }}"
     entity: turnserver
     etype: user
     permissions: r
-    recursive: yes
     state: present
-  with_items:
-    - /etc/letsencrypt/live/
-    - /etc/letsencrypt/archive/
+  loop: "{{ privkeys.files }}"
   notify: "restart coturn"
 
-- name: Set default ACL for LE recursively to r
+- name: Set default ACL for LE directory to r (needed for new keys)
   acl:
-    path: "{{ item }}"
+    path: "/etc/letsencrypt/archive/{{ inventory_hostname }}"
     entity: turnserver
     etype: user
-    permissions: rx
+    permissions: r
     default: yes
-    recursive: yes
     state: present
-  with_items:
-    - /etc/letsencrypt/live/
-    - /etc/letsencrypt/archive/
-  notify: "restart coturn"
 
-- name: Set ACL for LE directorys to rx
-  acl:
-    path: "{{ item }}"
-    entity: turnserver
-    etype: user
-    permissions: rx
-    recursive: yes
-    state: present
-  with_items:
-    - /etc/letsencrypt/live/
-    - /etc/letsencrypt/archive/
-  notify: "restart coturn"
-
-- name: prepare for service overrides
+- name: prepare for service/timer overrides
   file:
     path: "/etc/systemd/system/{{ item }}"
     state: directory
