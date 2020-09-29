@@ -23,7 +23,19 @@
     - { src: ufw-route.conf, dest: /etc/fail2ban/action.d/ }
     - { src: BBBfreeswitch.local, dest: /etc/fail2ban/filter.d/ }
     - { src: BBBjail.local, dest: /etc/fail2ban/jail.d/ }
-  notify: Restart fail2ban
+  notify: Reload fail2ban
+  tags:
+    - on_install
+
+- name: Collect all logs for failed ssh logins
+  blockinfile:
+    path: /etc/fail2ban/jail.d/defaults-debian.conf
+    block: |
+      bantime  = 1w
+      logpath = %(sshd_log)s
+                /var/lib/machines/bbb???-???/var/log/auth.log
+                /var/lib/machines/turn???/var/log/auth.log
+  notify: Reload fail2ban
   tags:
     - on_install
 
