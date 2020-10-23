@@ -6,7 +6,7 @@
   shell: >-
     wget -qO- https://ubuntu.bigbluebutton.org/bbb-install.sh |
     sed -r "s|(deb +(\[.+\] +)*)https://|\1http://HTTPS///|" |
-    bash -s -- -v xenial-220 -s {{ item }}.{{ ansible_domain }}
+    bash -s -- -v xenial-22 -s {{ item }}.{{ ansible_domain }}
   delegate_to: "{{ item }}.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
 
