@@ -1,3 +1,6 @@
 bbbcontainer: []
 MemoryHigh: 20G
 CPUQuota: 1200%
+machineres: false
+statusres: false
+checkres: false
