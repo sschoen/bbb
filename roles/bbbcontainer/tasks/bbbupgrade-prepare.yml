@@ -2,6 +2,21 @@
   pause:
     minutes: 120
 
+- name: Run bbb-install.sh
+  shell: >-
+    wget -qO- https://ubuntu.bigbluebutton.org/bbb-install.sh |
+    sed -r "s|(deb +(\[.+\] +)*)https://|\1http://HTTPS///|" |
+    bash -s -- -v xenial-220 -s {{ item }}.{{ ansible_domain }}
+  delegate_to: "{{ item }}.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
+
+- name: Fix apt sources for proxy use
+  shell: >-
+    for FILE in $(find /etc/apt/ -name "*.list") ;
+    do sed -i "s|https://|http://HTTPS///|" $FILE ; done
+  delegate_to: "{{ item }}.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
+
 - name: Update apt package cache on container and run full-upgrade
   apt:
     update-cache: yes
