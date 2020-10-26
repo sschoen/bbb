@@ -9,6 +9,8 @@
     bash -s -- -v xenial-22 -s {{ item }}.{{ ansible_domain }}
   delegate_to: "{{ item }}.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
+  tags:
+    - bbb_install_sh
 
 - name: Fix apt sources for proxy use
   shell: >-
@@ -16,6 +18,8 @@
     do sed -i "s|https://|http://HTTPS///|" $FILE ; done
   delegate_to: "{{ item }}.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
+  tags:
+    - bbb_install_sh
 
 - name: Update apt package cache on container and run full-upgrade
   apt:
