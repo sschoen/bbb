@@ -44,10 +44,19 @@
   tags:
     - on_install
 
+- name: Make sure .ssh exists
+  file:
+    path: "/var/lib/machines/{{ item }}/root/.ssh/"
+    state: directory
+    mode: '0700'
+  loop: "{{ container }}"
+  tags:
+    - on_install
+
 - name: Provide authorized_keys
   copy:
-    src: /root/.ssh
-    dest: "/var/lib/machines/{{ item }}/root/"
+    src: /root/.ssh/authorized_keys
+    dest: "/var/lib/machines/{{ item }}/root/.ssh/authorized_keys"
     remote_src: yes
   loop: "{{ container }}"
   tags:

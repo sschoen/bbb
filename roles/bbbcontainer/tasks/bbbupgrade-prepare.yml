@@ -2,24 +2,46 @@
   pause:
     minutes: 120
 
+- name: Start containers
+  systemd:
+    name: systemd-nspawn@{{ item }}.service
+    state: started
+  register: startcont
+  loop: "{{ bbbcontainer }}"
+
+- name: Wait for containers to settle
+  pause:
+    seconds: 10
+  when: startcont.changed
+
+- name: Purge packages causing troubles within the container
+  apt:
+    name:
+      - resolvconf
+      - makedev
+    purge: true
+    state: absent
+  delegate_to: "{{ item }}.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
+
 - name: Run bbb-install.sh
-  shell: >-
+  shell: >
     wget -qO- https://ubuntu.bigbluebutton.org/bbb-install.sh |
     sed -r "s|(deb +(\[.+\] +)*)https://|\1http://HTTPS///|" |
-    bash -s -- -v xenial-22 -s {{ item }}.{{ ansible_domain }}
+    bash -s -- -v xenial-22 -d -s {{ item }}.{{ ansible_domain }}
+    > /root/bbb-install.log
   delegate_to: "{{ item }}.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
   tags:
     - bbb_install_sh
 
+## FIXME: do not use shell for this but find and replace modules
 - name: Fix apt sources for proxy use
-  shell: >-
+  shell: >
     for FILE in $(find /etc/apt/ -name "*.list") ;
     do sed -i "s|https://|http://HTTPS///|" $FILE ; done
   delegate_to: "{{ item }}.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
-  tags:
-    - bbb_install_sh
 
 - name: Update apt package cache on container and run full-upgrade
   apt:
@@ -29,6 +51,12 @@
     autoclean: yes
   delegate_to: "{{ item }}.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
+
+- name: Set the shared secret
+  command: bbb-conf --setsecret {{ sharedsecret }}
+  delegate_to: "{{ item }}.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
+  when: not template.stat.exists
 
 - name: Wait a minute for containers to settle
   pause:

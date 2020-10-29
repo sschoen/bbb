@@ -61,12 +61,12 @@
     - bbb_upgrade
     - bbb_disable
 
-# for upgrading the BBBs, include bbbupgrade.yml
-- name: Import BBB upgrade tasks step one
-  import_tasks: bbbupgrade-prepare.yml
+# include ubuntu-container.yml
+- name: Generate Ubuntu container
+  import_tasks: ubuntu-container.yml
   tags:
     - never
-    - bbb_upgrade
+    - ubuntu-container
 
 - name: Fetch and/or clone container image
   script: mkbbbcont {{ container_image }} {{ item }} {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
@@ -110,6 +110,15 @@
   tags:
     - on_install
 
+# for upgrading the BBBs, include bbbupgrade.yml
+- name: Import BBB upgrade tasks step one
+  import_tasks: bbbupgrade-prepare.yml
+  tags:
+    - never
+    - bbb_upgrade
+    - ubuntu-container
+
+######################
 
 - name: Set container property MemoryHigh
   command:
@@ -337,7 +346,7 @@
 - name: Enable BBBs on scalelite
   command: "/usr/local/sbin/bbb-poolserver enable {{ item }}"
   delegate_to: "scale001.{{ ansible_domain }}"
-  when: >-
+  when: >
     not machineres.changed | default(false) and
     not statusres.changed  | default(false) and
     not checkres.changed | default(false)
@@ -361,7 +370,7 @@
   lineinfile:
     path: "/var/lib/machines/{{ item }}/etc/cron.daily/bigbluebutton"
     regexp: "^systemctl restart kurento-media-server"
-    line: >-
+    line: >
       systemctl restart kurento-media-server bbb-webrtc-sfu &&
       date +%Y-%m-%d\ %H:%M:%S > /var/tmp/bbb-kms-last-restart.txt
   loop: "{{ bbbcontainer }}"

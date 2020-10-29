@@ -18,6 +18,8 @@
     static_auth_secret: "{{ vault_static_auth_secret }}"
     container_image: "{{ vault_container_image }}"
     monhost_ip: "{{ vault_monhost_ip }}"
+    debproxy: "{{ vault_debproxy }}"
+    sharedsecret: "{{ vault_sharedsecret }}"
 
     ## list of debian containers to set up:
     turnserver: "turn{{ inventory_hostname | replace('b3srv', '')}}"

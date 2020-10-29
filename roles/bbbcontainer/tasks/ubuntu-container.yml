@@ -1,0 +1,79 @@
+## When the template is created, skip all other containers:
+- name: Set list of containers to only the template
+  set_fact:
+    bbbcontainer: "{{ bbbcontainer[0] }}"
+
+- name: debootstrap ubuntu
+  command: >
+    debootstrap
+    --include=systemd-container,dbus,language-pack-en,openssh-server,python,wget,ca-certificates,bind9-host
+    --components=main,universe,multiverse,restricted xenial
+    {{ item }} http://mirror.hetzner.de/ubuntu/packages/
+  args:
+    chdir: /var/lib/machines/
+    creates: "/var/lib/machines/{{ item }}"
+  loop: "{{ bbbcontainer }}"
+
+- name: Deploy ubuntu sources
+  copy:
+    src: ubuntu-sources.list
+    dest: "/var/lib/machines/{{ item }}/etc/apt/sources.list"
+  loop: "{{ bbbcontainer }}"
+
+- name: Activate proxy
+  template:
+    src: 30proxy.j2
+    dest: "/var/lib/machines/{{ item }}/etc/apt/apt.conf.d/30proxy"
+  loop: "{{ bbbcontainer }}"
+
+- name: Mask dev-hugepages.mount
+  file:
+    src: /dev/null
+    dest: "/var/lib/machines/{{ item }}/etc/systemd/system/dev-hugepages.mount"
+    state: link
+  loop: "{{ bbbcontainer }}"
+
+- name: Make sure /local/certs/ exists
+  file:
+    path: "/var/lib/machines/{{ item }}/local/certs/"
+    state: directory
+    mode: '0755'
+  loop: "{{ bbbcontainer }}"
+
+- name: Deploy certificate, privkey
+  copy:
+    src: privkey.pem
+    dest: "/var/lib/machines/{{ item }}/local/certs/"
+    owner: root
+    group: root
+    mode: "0600"
+  loop: "{{ bbbcontainer }}"
+
+- name: Deploy certificate, fullchain
+  copy:
+    src: fullchain.pem
+    dest: "/var/lib/machines/{{ item }}/local/certs/"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ bbbcontainer }}"
+
+- name: Make sure .ssh exists
+  file:
+    path: "/var/lib/machines/{{ item }}/root/.ssh/"
+    state: directory
+    mode: '0700'
+  loop: "{{ bbbcontainer }}"
+
+- name: Provide authorized_keys
+  copy:
+    src: /root/.ssh/authorized_keys
+    dest: "/var/lib/machines/{{ item }}/root/.ssh/authorized_keys"
+    remote_src: yes
+  loop: "{{ bbbcontainer }}"
+
+- name: Set locale
+  lineinfile:
+    path: "/var/lib/machines/{{ item }}/etc/default/locale"
+    line: "LANG=en_US.UTF-8"
+  loop: "{{ bbbcontainer }}"
