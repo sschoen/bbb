@@ -61,18 +61,24 @@
     - bbb_upgrade
     - bbb_disable
 
+##########################################################
+- name: check if template is available
+  stat:
+    path: "/var/lib/machines/{{ bbbcontainer[0] }}"
+  register: template
+
 # include ubuntu-container.yml
 - name: Generate Ubuntu container
   import_tasks: ubuntu-container.yml
-  tags:
-    - never
-    - ubuntu-container
+  when: not template.stat.exists
 
+## replaced {{ containr_image }} by 'bbb{{ inventory_hostname | replace('b3srv', '')}}-001'
 - name: Fetch and/or clone container image
-  script: mkbbbcont {{ container_image }} {{ item }} {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
+  script: mkbbbcont  bbb{{ inventory_hostname | replace('b3srv', '')}}-001  {{ item }}  {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
   args:
     creates: "/var/lib/machines/{{ item }}"
   loop: "{{ bbbcontainer }}"
+  when: template.stat.exists
   tags:
     - on_install
 
@@ -110,13 +116,16 @@
   tags:
     - on_install
 
+- name: Install BBB in the template
+  import_tasks: bbbupgrade-prepare.yml
+  when: not template.stat.exists
+
 # for upgrading the BBBs, include bbbupgrade.yml
-- name: Import BBB upgrade tasks step one
+- name: Import BBB upgrade tasks
   import_tasks: bbbupgrade-prepare.yml
   tags:
     - never
     - bbb_upgrade
-    - ubuntu-container
 
 ######################
 
