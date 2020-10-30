@@ -103,14 +103,18 @@ threads/cores per BBBs is still an area under investigation.
 
 #### Modifications of the BBB Container
 When preparing the initial Ubuntu 16.04 container, no very special
-modifications have been applied.  Almost all if not all customization
-from the straight forward setup described in the BBB documentation is
-available in the playbook ``bbbcontainerhosts.yml`` now, as any update
-of BBB seems to happily overwrite applied configuration settings.  The
-initial container is archived with ``machinectl export-tar bbb000
-bbb000-$(date +%Y%m%d).tar.xz`` and needs to be provided on roll-out:
+modifications have been applied.  All customization from the straight
+forward setup described in the BBB documentation is available in the
+playbook ``bbbcontainerhosts.yml``, especially in
+``roles/bbbcontainer/tasks/ubuntu-container.yml``.
+
+The initial container can be archived with ``machinectl export-tar bbb000
+bbb000-$(date +%Y%m%d).tar.xz`` and provided on roll-out:
 
 ``vault_container_image: "https://PROVIDE.CONTAINER.TLD/image/bbb000.tar.xz"``
+
+However, by default the first container is ``debootstrap``ed, all further
+containers are then cloned from that initial image.
 
 #### STUN/TURN Server
 In addition to the BBB containers, every host provides a containerized
@@ -147,9 +151,13 @@ and ssh pubkey authentification.  In addition, subnet information
 (``vault_guest_network=…``) needs to be provided.  Further more, all
 DNS entries need to be ready for the BBBs.  After that, the host
 carrying the STUN/TURN server and a bunch of BBBs is ready after
-running:
+running the following command twice:
 
 ``ansible-playbook -u root -i hosts --vault-password-file vault.pwd --limit HOSTS2INSTALL rollout-master.yml``
+
+In the first run, the initial container template is ``debootstrap``ed.
+A second call of the above command clones all the other BBBs from the
+template (which should of course be tested thoroughly before).
 
 ### Disable, Enable, Check and Upgrade BBBs
 To remove all BBBs of a host from the load balancer pool, use the
