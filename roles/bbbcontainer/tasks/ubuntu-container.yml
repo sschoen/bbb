@@ -1,7 +1,8 @@
 ## When the template is created, skip all other containers:
 - name: Set list of containers to only the template
   set_fact:
-    bbbcontainer: "{{ bbbcontainer[0] }}"
+    bbbcontainer:
+      - "{{ bbbcontainer[0] }}"
 
 - name: debootstrap ubuntu
   command: >

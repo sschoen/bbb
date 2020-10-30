@@ -74,7 +74,7 @@
 
 ## replaced {{ containr_image }} by 'bbb{{ inventory_hostname | replace('b3srv', '')}}-001'
 - name: Fetch and/or clone container image
-  script: mkbbbcont  bbb{{ inventory_hostname | replace('b3srv', '')}}-001  {{ item }}  {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
+  script: mkbbbcont  bbb{{ ansible_hostname | replace('b3srv', '')}}-001  {{ item }}  {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
   args:
     creates: "/var/lib/machines/{{ item }}"
   loop: "{{ bbbcontainer }}"
