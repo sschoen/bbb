@@ -28,22 +28,25 @@ else
 fi
 
 ## find the legacy IP-address of the template:
-OLDIP="$(grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' \
+OLDIP="$(grep -m1 -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' \
          "${MDIR}/${HNAME}/etc/bigbluebutton/nginx/sip.nginx")"
 
 echo "Replace IP-address '${OLDIP}' by '${IPADDR}'."
 grep -Ilr "${OLDIP}" "${MDIR}/${HNAME}" | grep -v /var/log/ | \
     xargs sed -i "s/${OLDIP}/${IPADDR}/g"
 
-OLDNAME="$(grep server_name "${MDIR}/${HNAME}/etc/nginx/sites-available/bigbluebutton" | \
+OLDNAME="$(grep -m1 server_name "${MDIR}/${HNAME}/etc/nginx/sites-available/bigbluebutton" | \
               sed -e "s/^\W*server_name\W*//" -e "s/;\W*$//")"
 
 echo "Replace hostname '${OLDNAME}' by '${NEWNAME}'."
 grep -Ilr "${OLDNAME}" "${MDIR}/${HNAME}" | grep -v /var/log/ | \
     xargs sed -i "s/${OLDNAME}/${NEWNAME}/g"
 
+# rename cert directory
+mv -v "${MDIR}/${HNAME}/etc/letsencrypt/live/$OLDNAME/" "${MDIR}/${HNAME}/etc/letsencrypt/live/$NEWNAME/"
+
 # remove hostkeys:
-rm -v ${MDIR}/${HNAME}/etc/ssh/ssh_host_* 
+rm -v ${MDIR}/${HNAME}/etc/ssh/ssh_host_*
 
 ##
 # systemd-run -M ${HNAME} /usr/bin/bbb-conf --setip ${HNAME}.lehrerfortbildung-bw.de
