@@ -44,6 +44,7 @@
     entity: turnserver
     etype: user
     permissions: r
+    recalculate_mask: no_mask
     state: present
   loop: "{{ privkeys.files }}"
   notify: "restart coturn"
