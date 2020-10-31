@@ -4,6 +4,7 @@
       - certbot
       - coturn
       - acl
+      - python-cryptography
     state: latest
 
 - name: fetch LE certificate
@@ -94,3 +95,30 @@
       no-tlsv1
       no-tlsv1_1
   notify: "restart coturn"
+
+
+- name: Test whether the certificate is valid
+  openssl_certificate_info:
+    path: /etc/letsencrypt/live/{{ inventory_hostname }}/fullchain.pem
+    valid_at:
+      notify: "+6w"
+      warn: "+3w"
+  register: result
+  changed_when: not result.valid_at.notify
+  failed_when: not result.valid_at.warn
+  ignore_errors: True
+  tags:
+    - cert_check
+    - bbb_check
+
+- name: Dump cert life time information
+  debug:
+    msg: >-
+      Cert valid until: {{ result.not_after[0:4] }}-{{ result.not_after[4:6] }}-{{ result.not_after[6:8] }}
+      {{ result.not_after[8:10] }}:{{ result.not_after[10:12] }}:{{ result.not_after[12:14] }} GMT
+  changed_when: not result.valid_at.notify
+  failed_when: not result.valid_at.warn
+  ignore_errors: True
+  tags:
+    - cert_check
+    - bbb_check
