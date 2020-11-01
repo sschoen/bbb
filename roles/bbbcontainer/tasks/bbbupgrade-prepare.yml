@@ -64,13 +64,13 @@
   tags:
     - bbb_install_sh
 
-## FIXME: do not use shell for this but find and replace modules
 - name: Fix apt sources for proxy use
   shell: >
-    for FILE in $(find /etc/apt/ -name "*.list") ;
-    do sed -i "s|https://|http://HTTPS///|" $FILE ; done
-  delegate_to: "{{ item }}.{{ ansible_domain }}"
-  loop: "{{ bbbcontainer }}"
+    for FILE in $(find /var/lib/machines/bbb???-???/etc/apt/ -name "*.list") ;
+    do sed -i "s|https://|http://HTTPS///|w /tmp/sed.log" $FILE ;
+    [ -s /tmp/sed.log ] && echo "'https' replaced in '$FILE'." || true ; done
+  register: result
+  changed_when: '"replaced" in result.stdout'
 
 - name: Update apt package cache on container and run full-upgrade
   apt:
