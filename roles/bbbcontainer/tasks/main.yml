@@ -66,6 +66,8 @@
   stat:
     path: "/var/lib/machines/{{ bbbcontainer[0] }}"
   register: template
+  tags:
+    - always
 
 # include ubuntu-container.yml
 - name: Generate Ubuntu container
@@ -116,6 +118,7 @@
   tags:
     - on_install
 
+
 - name: Install BBB in the template
   import_tasks: bbbupgrade-prepare.yml
   when: not template.stat.exists
@@ -144,7 +147,6 @@
   loop: "{{ bbbcontainer }}"
   tags:
     - on_install
-
 
 - name: Set stun and turn servers
   template:
