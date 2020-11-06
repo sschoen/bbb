@@ -7,7 +7,7 @@
 - name: debootstrap ubuntu
   command: >
     debootstrap
-    --include=systemd-container,dbus,language-pack-en,openssh-server,python,wget,ca-certificates,bind9-host
+    --include=systemd-container,dbus,language-pack-en,openssh-server,python,wget,ca-certificates,bind9-host,python3-requests
     --components=main,universe,multiverse,restricted xenial
     {{ item }} http://mirror.hetzner.de/ubuntu/packages/
   args:
