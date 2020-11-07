@@ -24,6 +24,18 @@
   delegate_to: "{{ item }}.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
 
+## Packages needed for bbb-install.sh to succeed; python3-requests for monitoring
+- name: Add necessary packages to ubuntu container
+  apt:
+    name:
+      - wget
+      - ca-certificates
+      - bind9-host
+      - python3-requests
+    state: latest
+  delegate_to: "{{ item }}.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
+
 ## Provide certificates
 - name: Make sure /local/certs/ exists
   file:
