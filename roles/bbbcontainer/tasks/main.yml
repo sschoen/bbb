@@ -228,6 +228,12 @@
   tags:
     - always
 
+- name: Clean BBB config after template provision
+  command: /usr/bin/bbb-conf --clean
+  delegate_to: "{{ item }}.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
+  when: not template.stat.exists
+
 - name: Reset BBBs
   command:
     cmd: systemd-run --unit=bbb-conf-clean -M {{ item }} -- /usr/bin/bbb-conf --clean
@@ -237,10 +243,10 @@
     - never
     - bbb_upgrade
 
-- name: Wait a minute for containers to settle
+- name: Wait two minutes for containers to settle
   pause:
     minutes: 2
-  when: bbb_reset is defined and bbb_reset.changed
+  when: not template.stat.exists or (bbb_reset is defined and bbb_reset.changed)
   tags:
     - on_install
     - bbb_upgrade

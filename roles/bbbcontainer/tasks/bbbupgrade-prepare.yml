@@ -94,7 +94,7 @@
   loop: "{{ bbbcontainer }}"
 
 - name: Set the shared secret
-  command: bbb-conf --setsecret {{ sharedsecret }}
+  command: /usr/bin/bbb-conf --setsecret {{ sharedsecret }}
   delegate_to: "{{ item }}.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
   when: not template.stat.exists
