@@ -74,7 +74,7 @@
   import_tasks: ubuntu-container.yml
   when: not template.stat.exists
 
-## replaced {{ containr_image }} by 'bbb{{ inventory_hostname | replace('b3srv', '')}}-001'
+## replaced {{ container_image }} by 'bbb{{ inventory_hostname | replace('b3srv', '')}}-001'
 - name: Fetch and/or clone container image
   script: mkbbbcont  bbb{{ ansible_hostname | replace('b3srv', '')}}-001  {{ item }}  {{ lookup('dig', '{{ item }}.{{ ansible_domain }}') }}
   args:
@@ -199,18 +199,6 @@
   loop: "{{ bbbcontainer }}"
   tags:
     - bbb_upgrade
-
-## Copy scripts for monitoring with checkmk to containers
-- name: Copy check-script to container BBB
-  copy:
-    src: checkbbb_for_chost.py
-    dest: /var/lib/machines/{{ item  }}/usr/local/bin/checkbbb_for_chost.py
-    owner: root
-    group: root
-    mode: 0755
-  loop: "{{ bbbcontainer }}"
-  tags:
-    - monitoring
 
 - name: Start containers
   systemd:

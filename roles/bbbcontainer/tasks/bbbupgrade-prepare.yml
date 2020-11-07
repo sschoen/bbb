@@ -99,9 +99,16 @@
   loop: "{{ bbbcontainer }}"
   when: not template.stat.exists
 
-- name: Wait a minute for containers to settle
-  pause:
-    minutes: 1
+## Copy script for monitoring with checkmk to containers
+- name: Copy check-script to container BBB
+  copy:
+    src: checkbbb_for_chost.py
+    dest: /usr/local/bin/checkbbb_for_chost.py
+    owner: root
+    group: root
+    mode: 0755
+  delegate_to: "{{ item }}.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
 
 - name: Stop BBB containers from containerhost
   systemd:
