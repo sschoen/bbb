@@ -93,6 +93,20 @@
   delegate_to: "{{ item }}.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
 
+- name: Mask dev-hugepages.mount
+  systemd:
+    name: dev-hugepages.mount
+    masked: yes
+  delegate_to: "{{ item }}.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
+
+- name: Mask disable-transparent-huge-pages.service
+  systemd:
+    name: disable-transparent-huge-pages.service
+    masked: yes
+  delegate_to: "{{ item }}.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
+
 - name: Set the shared secret
   command: /usr/bin/bbb-conf --setsecret {{ sharedsecret }}
   delegate_to: "{{ item }}.{{ ansible_domain }}"

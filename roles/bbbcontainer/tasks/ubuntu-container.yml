@@ -27,13 +27,6 @@
     dest: "/var/lib/machines/{{ item }}/etc/apt/apt.conf.d/30proxy"
   loop: "{{ bbbcontainer }}"
 
-- name: Mask dev-hugepages.mount
-  file:
-    src: /dev/null
-    dest: "/var/lib/machines/{{ item }}/etc/systemd/system/dev-hugepages.mount"
-    state: link
-  loop: "{{ bbbcontainer }}"
-
 - name: Make sure .ssh exists
   file:
     path: "/var/lib/machines/{{ item }}/root/.ssh/"
