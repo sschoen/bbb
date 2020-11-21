@@ -1,5 +1,5 @@
 - name: Install a standalone greenlight with docker 
-  hosts: all
+  hosts: greenlight
   remote_user: root
   become: no
   vars_files: vault

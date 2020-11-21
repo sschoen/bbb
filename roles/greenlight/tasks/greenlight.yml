@@ -38,3 +38,18 @@
     src: greenlight.nginx.j2
     dest: /etc/nginx/sites-enabled/greenlight
   notify: Restart nginx
+
+- name: Copy index.html template to /var/www/html/index.html 
+  template: 
+    src: index.html.j2
+    dest: /var/www/html/index.html 
+
+- name: Create directory /var/www/html/b/
+  file:
+    path: /var/www/html/b/
+    state: directory
+
+- name: Copy index.html template to /var/www/html/b/index.html 
+  template: 
+    src: index.html.j2
+    dest: /var/www/html/b/index.html 
