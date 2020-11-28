@@ -16,7 +16,7 @@
       --agree-tos
       --preferred-challenges http
       --email {{ letsencryptemail }}
-      --deploy-hook 'systemctl restart coturn'
+      --deploy-hook 'setfacl -m u:turnserver:r /etc/letsencrypt/archive/*/privkey*.pem && systemctl restart coturn'
       -d {{ inventory_hostname }}
     creates: /etc/letsencrypt/live/
   when: letsencryptemail is defined and letsencryptemail | length > 0
@@ -101,7 +101,7 @@
   openssl_certificate_info:
     path: /etc/letsencrypt/live/{{ inventory_hostname }}/fullchain.pem
     valid_at:
-      notify: "+6w"
+      notify: "+4w"
       warn: "+3w"
   register: result
   changed_when: not result.valid_at.notify
