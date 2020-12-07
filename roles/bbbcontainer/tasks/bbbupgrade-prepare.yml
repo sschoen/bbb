@@ -65,6 +65,16 @@
   delegate_to: "{{ item }}.{{ ansible_domain }}"
   loop: "{{ bbbcontainer }}"
 
+## BBB does not like masked disable-transparent-huge-pages.service
+## Unmask here, mask it again after upgrade.
+- name: Remove mask from disable-transparent-huge-pages.service
+  systemd:
+    name: disable-transparent-huge-pages.service
+    masked: no
+    daemon-reload: yes
+  delegate_to: "{{ item }}.{{ ansible_domain }}"
+  loop: "{{ bbbcontainer }}"
+
 - name: Run bbb-install.sh
   shell: >
     wget -qO- https://ubuntu.bigbluebutton.org/bbb-install.sh |
